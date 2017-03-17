@@ -99,7 +99,7 @@ void WBRControl::WBRmain(){
  */
 int WBRControl::FloorCheck(){
 
-    int nRet = FLOOR_EXIST;     // WBRの前方に床がある状態で初期化
+	int nRet = FLOOR_EXIST;     // WBRの前方に床がある状態で初期化
 	
     // 各前方デジタルセンサーの値を関数中の変数として定義
 	int right           = digitalRead(pinFrontRightSensor);        // 前方右センサの状態を取得
@@ -112,7 +112,7 @@ int WBRControl::FloorCheck(){
      * 前方のデジタルセンサの内、どれか1つでも床が無いことを認識しているか確認
      * (もし前方中央センサーが無いときは変数のcenterを条件式から省く)
      */
-    if(right * left * center == FLOOR_NOTEXIST){
+	if(right * left * center == FLOOR_NOTEXIST){
         
         /**
          * 重力によって進行方向が地面側へ曲がっていないかを確認（ボードの下端で前方センサが反応しているかどうか）
@@ -125,16 +125,16 @@ int WBRControl::FloorCheck(){
          * 前方右センサか前方左センサの片方だけ、床が無いことを認識している、要は力によって進行方向が地面側へ曲がっていないか
          * （＝WBRの直進方向がホワイトボードの外枠に垂直ではない）かを確認
          */
-        if(right != left){
+		if(right != left){
 
 			FloorDirectionTurning();     // 床方向調整を行い、WBRの向きをホワイトボードの外枠に対して垂直に修正
 
-        }
+		}
     	
-        nRet = FLOOR_NOTEXIST;           // WBRの前方に床が無い状態に変更
+		 nRet = FLOOR_NOTEXIST;           // WBRの前方に床が無い状態に変更
 		
-    	
-    }
+		
+	}
 
 	return nRet;
 }
@@ -149,49 +149,49 @@ int WBRControl::FloorCheck(){
  */
 void WBRControl::CornerCheck(int *turn){
 
-    int nRet = CORNER_NOTEXIST;						// 角にぶつかっていない状態で初期化
-    int right = digitalRead(pinSideRightSensor);	// 側面右センサの状態を取得
-    int left = digitalRead(pinSideLeftSensor);		// 側面左センサの状態を取得
+	int nRet = CORNER_NOTEXIST;						// 角にぶつかっていない状態で初期化
+	int right = digitalRead(pinSideRightSensor);	// 側面右センサの状態を取得
+	int left = digitalRead(pinSideLeftSensor);		// 側面左センサの状態を取得
 
     /**
      * 一度でも角判定がされたこと（ボードの下端の角を認識済か）を関数内で保存する
      * (グローバル関数にするか迷ったがとりあえず静的ローカル変数で宣言)
      */
-    static int firstCorner= 0;                    
+	static int firstCorner= 0;                    
 
     // 側面のセンサーが壁に当たっている（＝床がない）ことを検知
-    if(right * left == FLOOR_NOTEXIST){
+	if(right * left == FLOOR_NOTEXIST){
 
 	    // 初めて角にぶつかった場合
-        if(firstCorner%2 == 0){
+		if(firstCorner%2 == 0){
 
 			// 左側面のセンサーが床が無いと反応した場合
-            if(left == FLOOR_NOTEXIST){
+			if(left == FLOOR_NOTEXIST){
 
 				*turn = NEXT_TURN_RIGHT;           					// 旋回関数に右旋回から旋回をさせるように設定	 
 
-            }
+			}
 
             // 右側面のセンサーが床が無いと反応した場合
-            else{
+			else{
 
 				*turn = NEXT_TURN_LEFT;           					// 旋回関数に左旋回から旋回をさせるように設定 
 
-            }
+			}
 
-        }
+		}
 
         // 角にぶつかったのが初めてではない（ボードの端から端まで移動しきった）時
-        else{
+		 else{
 
-            nRet = CORNER_EXIST;    					// 最後の角に到達したことをメイン文へ返す
+			nRet = CORNER_EXIST;    					// 最後の角に到達したことをメイン文へ返す
 
-        }
+		}
 
-    	firstCorner++;                            // 旋回した（角にぶつかった）ことを保存(奇数回目でbackhomeになるようにしている)  	
-    }
+		firstCorner++;                            // 旋回した（角にぶつかった）ことを保存(奇数回目でbackhomeになるようにしている)  	
+	}
 
-    return nRet;	
+	return nRet;	
 }
 
 /**
@@ -277,11 +277,11 @@ void WBRContorol::GoForward(){
  */
 void WBRContorol::StartupBatteryCheck(){
 	
- 	if(analogwrite(pinReadBattery) <= START_BATTERY){
+	if(analogwrite(pinReadBattery) <= START_BATTERY){
 
 		delay(CHARGE_DELAY_TIME); 							//待つことによって充電	
 
- 	}
+	}
 
 }
 
@@ -401,8 +401,8 @@ void WBRControl::BackHome(){
     	
 		Turn90Deg(&turn);           						// 旋回関数を用いて「その場」で時計回りに90度回転
     	
-    	deley(MGNET_SERACH_DELAY_TIME)						//　磁力感知がすぐできない場合を考慮  
+		deley(MGNET_SERACH_DELAY_TIME)						//　磁力感知がすぐできない場合を考慮  
 
-    }
+	}
 
 }

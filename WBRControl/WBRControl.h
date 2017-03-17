@@ -65,7 +65,8 @@ class WBRControl
             int pinMagnetSensor
   	);
 
-    void WBRmain();
+    void WBRMain();
+    void pinInit();
     void FloorCheck();
     void CornerCheck(int *turn);
     void FloorDirectionTurning();
@@ -76,6 +77,7 @@ class WBRControl
     void Turn180deg(int *turn);
     void Turn90deg(int *turn);
     void BackHome();
+    
 };
 
 #endif

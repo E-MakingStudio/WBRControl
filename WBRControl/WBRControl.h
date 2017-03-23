@@ -10,7 +10,7 @@
 
 //　CornerCheck
 #define CORNER_EXIST        1          // 角あり
-#define CORNER_NOEXIST      0          // 角なし
+#define CORNER_NOTEXIST      0          // 角なし
 
 //　FloorDirectionturning
 #define TURN_PWM            160        // モーターの回転数
@@ -65,10 +65,10 @@ class WBRControl
             int pinMagnetSensor
   	);
 
-    void WBRMain();
+    int WBRMain();
     void pinInit();
-    void FloorCheck();
-    void CornerCheck(int *turn);
+    int FloorCheck();
+    int CornerCheck(int *turn);
     void FloorDirectionTurning();
     void FloorTurningRight();
     void FloorTurningLeft();
@@ -76,7 +76,7 @@ class WBRControl
     void StartupBatteryCheck();
     void Turn180deg(int *turn);
     void Turn90deg(int *turn);
-    void BackHome();
+    void BackHome(int *turn);
     
 };
 

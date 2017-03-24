@@ -56,14 +56,14 @@ void WBRControl::pinInit(){
  * WBRmain
  * WBRのメイン
  */
-void WBRControl::WBRmain(){	
+int WBRControl::WBRMain(){	
 	
 	int turn;		// // 曲がった方向を記録する変数を宣言	
 	
 	StartupBatteryCheck(); //起動前電池チェック
 	
 	// 電池がなくなるまで帰還せずにループする
-	while( analogwrite(pinReadBattery) >= BAD_BATTERY  ){	
+	while( analogRead(pinReadBattery) >= BAD_BATTERY  ){	
 
 		//床があるかぎり前進
 		while( FloorCheck() == FLOOR_EXIST){	
@@ -82,7 +82,7 @@ void WBRControl::WBRmain(){
 		// 角がなければ曲がり、最初に戻ってループする	
 		else{
 
-			Turn180Deg(&turn);		
+			Turn180deg(&turn);		
 
 		}
 		
@@ -147,7 +147,7 @@ int WBRControl::FloorCheck(){
  * 旋回関数中に上端に達した場合、それを記憶しておくフラグを立てておく必要があるかもしれないです
  * ただずり下がりを常に考慮すると、一番最初のボードの下端走行時ですらまともに走れないことになりますが…
  */
-void WBRControl::CornerCheck(int *turn){
+int WBRControl::CornerCheck(int *turn){
 
 	int nRet = CORNER_NOTEXIST;						// 角にぶつかっていない状態で初期化
 	int right = digitalRead(pinSideRightSensor);	// 側面右センサの状態を取得
@@ -216,7 +216,7 @@ void WBRControl::FloorDirectionTurning(){
 	}
 
 	// 前方左センサに反応あり（左前に床あり）
-	else (left == FLOOR_EXIST){
+	else if(left == FLOOR_EXIST){
 		
 		while(right != left){
 
@@ -260,7 +260,7 @@ void WBRControl::FloorTurningLeft(){
  * GoForward
  * 前進用の関数
  */
-void WBRContorol::GoForward(){
+void WBRControl::GoForward(){
 
 	analogWrite(pinLeftMotorPWMGo,LEFT_PWM_SPEED);		//左モーターの速度を設定
 	analogWrite(pinLeftMotorPWMBack,0);					
@@ -275,9 +275,9 @@ void WBRContorol::GoForward(){
  * 起動前にバッテリーが十分充電できているか確認する
  * バッテリー容量によって出力電圧が変化していること前提
  */
-void WBRContorol::StartupBatteryCheck(){
+void WBRControl::StartupBatteryCheck(){
 	
-	if(analogwrite(pinReadBattery) <= START_BATTERY){
+	if(analogRead(pinReadBattery) <= START_BATTERY){
 
 		delay(CHARGE_DELAY_TIME); 							//待つことによって充電	
 
@@ -286,14 +286,14 @@ void WBRContorol::StartupBatteryCheck(){
 }
 
 /**
- * 回転_Turn180Deg						
+ * 回転_Turn180deg						
  * 180度その場で回転する	
  * goとbackは同時に数値を入れない
  * turn関数は角判定、帰還で指定されている
  */
-void WBRContorol::Turn180deg(int *turn){
+void WBRControl::Turn180deg(int *turn){
 
-	Turn90Deg(turn);								// 90度回転
+	Turn90deg(turn);								// 90度回転
 
 	//　前進、iの値は仮
 	for(int i=1;i<=5;i++){
@@ -315,7 +315,7 @@ void WBRContorol::Turn180deg(int *turn){
 
 	}
 
-	Turn90Deg(turn);	// 90度回転
+	Turn90deg(turn);	// 90度回転
 		
 	//　1だったら0、0だったら1のturnを返す
 	if(*turn == NEXT_TURN_LEFT){
@@ -333,11 +333,11 @@ void WBRContorol::Turn180deg(int *turn){
 }
 
 /**
- * 旋回_Turn90Deg						
+ * 旋回_Turn90deg						
  * 90度その場で回転する		
  * turn関数は角判定、帰還で指定されている
  */
-void WBRContorol::Turn90deg(int *turn){
+void WBRControl::Turn90deg(int *turn){
 	
 	//右折
 	if (*turn == 0) {
@@ -383,7 +383,7 @@ void WBRContorol::Turn90deg(int *turn){
  * WBRルンバが清掃後、給電所に戻るときに利用される関数
  * 床判定で床がないと判断され角判定で2回目の角にぶつかったと判断されてから帰還するのが大前提
  */
-void WBRControl::BackHome(){
+void WBRControl::BackHome(int *turn){
 	
 	int magnet_sencer   = digitalRead(pinMagnetSensor);		// 磁力センサの状態を取得(0で未検出、1で検出)
 	
@@ -399,9 +399,9 @@ void WBRControl::BackHome(){
 
 		}
     	
-		Turn90Deg(&turn);           						// 旋回関数を用いて「その場」で時計回りに90度回転
+		Turn90deg(turn);           						// 旋回関数を用いて「その場」で時計回りに90度回転
     	
-		deley(MGNET_SERACH_DELAY_TIME)						//　磁力感知がすぐできない場合を考慮  
+		delay(MGNET_SERACH_DELAY_TIME);						//　磁力感知がすぐできない場合を考慮  
 
 	}
 

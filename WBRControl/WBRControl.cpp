@@ -92,7 +92,7 @@ int WBRControl::WBRMain(){
 
 	BackHome(&turn);					//帰還する
 
-	Serial.println("Out Main.");
+	Serial.println("End Main.");
 }	
 
 /**
@@ -115,10 +115,10 @@ int WBRControl::FloorCheck(){
 	
     /**
      * 前方のデジタルセンサの内、どれか1つでも床が無いことを認識しているか確認
-     * (中央センサが存在しない/使用しないときは常に反応していると認定させる)
+     * (中央センサが存在しない/使用しないときはピンの値を読ませずに常に反応していると認定させる)
      */
 
-	if(center == 0){
+	if(pinFrontCenterSensor == 0){
 	center = 1;
 	}
 
@@ -219,10 +219,10 @@ void WBRControl::FloorDirectionTurning(){
 	int right	= digitalRead(pinFrontRightSensor);	// 前方右センサの状態を取得
 	int left	= digitalRead(pinFrontLeftSensor);	// 前方左センサの状態を取得
 
-	// 前方右センサに反応あり（右前に床あり）
+	// 前方右センサに反応あり（右前に床なし）
 	if(right == FLOOR_EXIST){
 
-		while(right != left){
+		while(right == left){
 
 			FloorTurningLeft();						// 右のはみ出しを修正
 
@@ -230,10 +230,10 @@ void WBRControl::FloorDirectionTurning(){
 		
 	}
 
-	// 前方左センサに反応あり（左前に床あり）
+	// 前方左センサに反応あり（左前に床なし）
 	else if(left == FLOOR_EXIST){
 		
-		while(right != left){
+		while(right == left){
 
 			FloorTurningRight();						// 左のはみ出しを修正		
 
@@ -317,7 +317,7 @@ void WBRControl::StartupBatteryCheck(){
 
 /**
  * 回転_Turn180deg						
- * 180度その場で回転する	
+ * 180度その場で回転する。内部処理的にはTurn90deg(1回目)→GoForward(車体の横幅一つ分)→Turn90deg(2回目)。
  * goとbackは同時に数値を入れない
  * turn関数は角判定、帰還で指定されている
  */
@@ -379,11 +379,11 @@ void WBRControl::Turn90deg(int *turn){
 		// iの値は仮
 		for(int i = 1; i <= 5; i++){
 				
-			analogWrite(pinLeftMotorPWMGo,0);	
+			analogWrite(pinLeftMotorPWMGo,TURN_PWM);	
 			analogWrite(pinLeftMotorPWMBack,0);	//PWM値は仮	
 			
-			analogWrite(pinRightMotorPWMGo,TURN_PWM);
-			analogWrite(pinRightMotorPWMBack,0);		
+			analogWrite(pinRightMotorPWMGo,0);
+			analogWrite(pinRightMotorPWMBack,TURN_PWM);		
 			
 			delay(SPIN_DELAY_TIME);	
 
@@ -397,10 +397,10 @@ void WBRControl::Turn90deg(int *turn){
 		//iの値は仮
 		for(int i = 1; i <= 5; i++){
 				
-			analogWrite(pinLeftMotorPWMGo,TURN_PWM);
-			analogWrite(pinLeftMotorPWMBack,0);	
+			analogWrite(pinLeftMotorPWMGo,0);
+			analogWrite(pinLeftMotorPWMBack,TURN_PWM);	
 			
-			analogWrite(pinRightMotorPWMGo,0);
+			analogWrite(pinRightMotorPWMGo,TURN_PWM);
 			analogWrite(pinRightMotorPWMBack,0);
 			
 			delay(SPIN_DELAY_TIME);	
@@ -428,7 +428,7 @@ void WBRControl::BackHome(int *turn){
 
 		*turn=NEXT_TURN_RIGHT;								//turn関数を固定
     	
-		// ホワイトボード右側の端にぶつかるまで前進(前進関数内部で壁にぶつかったらこっちに戻ってくるとうれしい)
+		// ホワイトボード右側の端にぶつかるまで前進
 		while( FloorCheck()==FLOOR_EXIST){		
 
 			GoForward();	

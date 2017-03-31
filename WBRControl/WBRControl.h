@@ -14,12 +14,12 @@
 #define CORNER_NOTEXIST      0          // 角なし
 
 //　FloorDirectionturning
-#define TURN_PWM            120        // モーターの回転数
+#define TURN_PWM            145        // モーターの回転数
 #define FLOOR_DELAY_TIME 		100        // 調整時の待機時間
 
 //　GoForward
-#define RIGHT_PWM_SPEED			50         // 前進時右モーターの回転数
-#define LEFT_PWM_SPEED      50         // 前進時左モーターの回転数
+#define RIGHT_PWM_SPEED			179         // 前進時右モーターの回転数
+#define LEFT_PWM_SPEED      234         // 前進時左モーターの回転数
 
 //　StartBatteryCheck
 #define START_BATTERY 			3.5        //十分にバッテリーが充電されているときの電圧

@@ -91,12 +91,8 @@ int WBRControl::WBRMain(){
 	}
 
 	BackHome(&turn);					//帰還する
-
-<<<<<<< HEAD
-	Serial.println("Out Main.");
-=======
 	Serial.println("End Main.");
->>>>>>> origin/Serial_debug
+
 }	
 
 /**
@@ -111,29 +107,25 @@ int WBRControl::FloorCheck(){
 	int nRet = FLOOR_EXIST;     // WBRの前方に床がある状態で初期化
 	
     // 各前方デジタルセンサーの値を関数中の変数として定義
+	// (床があるときにセンサが返す値は０[LOW]です)
 	int right           = digitalRead(pinFrontRightSensor);        // 前方右センサの状態を取得
 	int left            = digitalRead(pinFrontLeftSensor);         // 前方左センサの状態を取得
 	int center          = digitalRead(pinFrontCenterSensor);       // 前方中央センサの状態を取得（存在しない場合は省く）
 	//int s_right         = digitalRead(pinSideRightSensor);          // 側面右センサの状態を取得
 	//int s_left          = digitalRead(pinSideLeftSensor);          // 側面左センサの状態を所得
+
+	// 
 	
     /**
      * 前方のデジタルセンサの内、どれか1つでも床が無いことを認識しているか確認
-<<<<<<< HEAD
-     * (中央センサが存在しない/使用しないときは常に反応していると認定させる)
-     */
-
-	if(center == 0){
-=======
      * (中央センサが存在しない/使用しないときはピンの値を読ませずに常に反応していると認定させる)
      */
 
 	if(pinFrontCenterSensor == 0){
->>>>>>> origin/Serial_debug
-	center = 1;
+	center = 0;
 	}
 
-	if(right * left * center == FLOOR_NOTEXIST){
+	if(right + left + center >= FLOOR_NOTEXIST){
         
         /**
          * 重力によって進行方向が地面側へ曲がっていないかを確認（ボードの下端で前方センサが反応しているかどうか）
@@ -183,7 +175,7 @@ int WBRControl::CornerCheck(int *turn){
 	static int firstCorner= 0;                    
 
     // 側面のセンサーが壁に当たっている（＝床がない）ことを検知
-	if(right * left == FLOOR_NOTEXIST){
+	if(right + left >= FLOOR_NOTEXIST){
 
 	    // 初めて角にぶつかった場合
 		if(firstCorner%2 == 0){
@@ -227,10 +219,11 @@ void WBRControl::FloorDirectionTurning(){
 	
 	Serial.println("In FloorDirectionTurning.");
 
+	// (床があるときにセンサが返す値は０[LOW]です)
 	int right	= digitalRead(pinFrontRightSensor);	// 前方右センサの状態を取得
 	int left	= digitalRead(pinFrontLeftSensor);	// 前方左センサの状態を取得
 
-	// 前方右センサに反応あり（右前に床なし）
+	// 前方右センサに反応あり（右前に床あり）
 	if(right == FLOOR_EXIST){
 
 		while(right == left){
@@ -241,7 +234,7 @@ void WBRControl::FloorDirectionTurning(){
 		
 	}
 
-	// 前方左センサに反応あり（左前に床なし）
+	// 前方左センサに反応あり（左前に床あり）
 	else if(left == FLOOR_EXIST){
 		
 		while(right == left){
@@ -262,11 +255,11 @@ void WBRControl::FloorTurningRight(){
 
 	Serial.println("In FloorTurningRight.");
 
-	analogWrite(pinLeftMotorPWMGo,0);
+	analogWrite(pinLeftMotorPWMGo,TURN_PWM);
 	analogWrite(pinLeftMotorPWMBack,0);			//　PWM値は仮
 	
-	analogWrite(pinRightMotorPWMGo,TURN_PWM);
-	analogWrite(pinRightMotorPWMBack,0);
+	analogWrite(pinRightMotorPWMGo,0);
+	analogWrite(pinRightMotorPWMBack,TURN_PWM);
 
 	Serial.println("Out FloorTurningRight.");
 		
@@ -280,10 +273,10 @@ void WBRControl::FloorTurningLeft(){
 
 	Serial.println("In FloorTurningLeft.");
 
-	analogWrite(pinLeftMotorPWMGo,TURN_PWM);
-	analogWrite(pinLeftMotorPWMBack,0);		
+	analogWrite(pinLeftMotorPWMGo,0);
+	analogWrite(pinLeftMotorPWMBack,TURN_PWM);		
 	
-	analogWrite(pinRightMotorPWMGo,0);
+	analogWrite(pinRightMotorPWMGo,TURN_PWM);
 	analogWrite(pinRightMotorPWMBack,0);
 	
 	Serial.println("Out FloorTurningLeft.");

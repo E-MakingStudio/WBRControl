@@ -56,14 +56,18 @@ void WBRControl::pinInit(){
  * WBRmain
  * WBRのメイン
  */
-int WBRControl::WBRMain(){	
+int WBRControl::WBRMain(){
+
+	Serial.println("In Main.");	
 	
 	int turn;		// // 曲がった方向を記録する変数を宣言	
 	
 	StartupBatteryCheck(); //起動前電池チェック
 	
 	// 電池がなくなるまで帰還せずにループする
-	while( analogRead(pinReadBattery) >= BAD_BATTERY  ){	
+	// 電池が読み込めないときは下の文で充電が十分と仮定する
+	//while( analogRead(pinReadBattery) >= BAD_BATTERY  ){
+	while( 6.0 >= BAD_BATTERY  ){	
 
 		//床があるかぎり前進
 		while( FloorCheck() == FLOOR_EXIST){	
@@ -89,6 +93,7 @@ int WBRControl::WBRMain(){
 	}
 
 	BackHome(&turn);					//帰還する
+	Serial.println("End Main.");
 
 }	
 
@@ -99,20 +104,30 @@ int WBRControl::WBRMain(){
  */
 int WBRControl::FloorCheck(){
 
+	Serial.println("In FloorCheck.");
+
 	int nRet = FLOOR_EXIST;     // WBRの前方に床がある状態で初期化
 	
     // 各前方デジタルセンサーの値を関数中の変数として定義
+	// (床があるときにセンサが返す値は０[LOW]です)
 	int right           = digitalRead(pinFrontRightSensor);        // 前方右センサの状態を取得
 	int left            = digitalRead(pinFrontLeftSensor);         // 前方左センサの状態を取得
 	int center          = digitalRead(pinFrontCenterSensor);       // 前方中央センサの状態を取得（存在しない場合は省く）
 	//int s_right         = digitalRead(pinSideRightSensor);          // 側面右センサの状態を取得
 	//int s_left          = digitalRead(pinSideLeftSensor);          // 側面左センサの状態を所得
 
+	// 
+	
     /**
      * 前方のデジタルセンサの内、どれか1つでも床が無いことを認識しているか確認
-     * (もし前方中央センサーが無いときは変数のcenterを条件式から省く)
+     * (中央センサが存在しない/使用しないときはピンの値を読ませずに常に反応していると認定させる)
      */
-	if(right * left * center == FLOOR_NOTEXIST){
+
+	if(pinFrontCenterSensor == 0){
+	center = 0;
+	}
+
+	if(right + left + center >= FLOOR_NOTEXIST){
         
         /**
          * 重力によって進行方向が地面側へ曲がっていないかを確認（ボードの下端で前方センサが反応しているかどうか）
@@ -135,7 +150,7 @@ int WBRControl::FloorCheck(){
 		
 		
 	}
-
+	Serial.println("Out FloorCheck.");
 	return nRet;
 }
 
@@ -149,9 +164,11 @@ int WBRControl::FloorCheck(){
  */
 int WBRControl::CornerCheck(int *turn){
 
+	Serial.println("In CornerCheck.");
+
 	int nRet = CORNER_NOTEXIST;						// 角にぶつかっていない状態で初期化
-	int right = digitalRead(pinSideRightSensor);	// 側面右センサの状態を取得
-	int left = digitalRead(pinSideLeftSensor);		// 側面左センサの状態を取得
+	int S_right = digitalRead(pinSideRightSensor);	// 側面右センサの状態を取得
+	int S_left = digitalRead(pinSideLeftSensor);		// 側面左センサの状態を取得
 
     /**
      * 一度でも角判定がされたこと（ボードの下端の角を認識済か）を関数内で保存する
@@ -160,13 +177,13 @@ int WBRControl::CornerCheck(int *turn){
 	static int firstCorner= 0;                    
 
     // 側面のセンサーが壁に当たっている（＝床がない）ことを検知
-	if(right * left == FLOOR_NOTEXIST){
+	if(S_right + S_left >= FLOOR_NOTEXIST){
 
 	    // 初めて角にぶつかった場合
 		if(firstCorner%2 == 0){
 
 			// 左側面のセンサーが床が無いと反応した場合
-			if(left == FLOOR_NOTEXIST){
+			if(S_left == FLOOR_NOTEXIST){
 
 				*turn = NEXT_TURN_RIGHT;           					// 旋回関数に右旋回から旋回をさせるように設定	 
 
@@ -191,6 +208,7 @@ int WBRControl::CornerCheck(int *turn){
 		firstCorner++;                            // 旋回した（角にぶつかった）ことを保存(奇数回目でbackhomeになるようにしている)  	
 	}
 
+	Serial.println("Out CornerCheck.");
 	return nRet;	
 }
 
@@ -200,16 +218,21 @@ int WBRControl::CornerCheck(int *turn){
  * 床判定の後に呼ばれていることが前提
  */	
 void WBRControl::FloorDirectionTurning(){
-		
+	
+	Serial.println("In FloorDirectionTurning.");
+
+	// (床があるときにセンサが返す値は０[LOW]です)
 	int right	= digitalRead(pinFrontRightSensor);	// 前方右センサの状態を取得
 	int left	= digitalRead(pinFrontLeftSensor);	// 前方左センサの状態を取得
 
 	// 前方右センサに反応あり（右前に床あり）
 	if(right == FLOOR_EXIST){
 
-		while(right != left){
+		// while文の条件内でセンサの値を常に取得し直す。
+		while(digitalRead(pinFrontRightSensor) != digitalRead(pinFrontLeftSensor)){
 
 			FloorTurningLeft();						// 右のはみ出しを修正
+			
 
 		}
 		
@@ -218,14 +241,21 @@ void WBRControl::FloorDirectionTurning(){
 	// 前方左センサに反応あり（左前に床あり）
 	else if(left == FLOOR_EXIST){
 		
-		while(right != left){
+		while(digitalRead(pinFrontRightSensor) != digitalRead(pinFrontLeftSensor)){
 
 			FloorTurningRight();						// 左のはみ出しを修正		
 
 		}
 
-	}	
+	}
 
+	// モーターの停止
+	analogWrite(pinLeftMotorPWMGo,0);
+	analogWrite(pinLeftMotorPWMBack,0);		
+	analogWrite(pinRightMotorPWMGo,0);
+	analogWrite(pinRightMotorPWMBack,0);
+
+	Serial.println("Out FloorDirectionTurning.");
 }
 
 /**
@@ -234,11 +264,14 @@ void WBRControl::FloorDirectionTurning(){
  */
 void WBRControl::FloorTurningRight(){
 
-	analogWrite(pinLeftMotorPWMGo,0);
+	Serial.println("In FloorTurningRight.");
+
+	analogWrite(pinLeftMotorPWMGo,TURN_PWM);
 	analogWrite(pinLeftMotorPWMBack,0);			//　PWM値は仮
-	
-	analogWrite(pinRightMotorPWMGo,TURN_PWM);
-	analogWrite(pinRightMotorPWMBack,0);
+	analogWrite(pinRightMotorPWMGo,0);
+	analogWrite(pinRightMotorPWMBack,TURN_PWM);
+
+	Serial.println("Out FloorTurningRight.");
 		
 }
 
@@ -248,12 +281,15 @@ void WBRControl::FloorTurningRight(){
  */
 void WBRControl::FloorTurningLeft(){
 
-	analogWrite(pinLeftMotorPWMGo,TURN_PWM);
-	analogWrite(pinLeftMotorPWMBack,0);		
-	
-	analogWrite(pinRightMotorPWMGo,0);
+	Serial.println("In FloorTurningLeft.");
+
+	analogWrite(pinLeftMotorPWMGo,0);
+	analogWrite(pinLeftMotorPWMBack,TURN_PWM);		
+	analogWrite(pinRightMotorPWMGo,TURN_PWM);
 	analogWrite(pinRightMotorPWMBack,0);
-		
+	
+	Serial.println("Out FloorTurningLeft.");
+
 }
 
 /**
@@ -262,11 +298,15 @@ void WBRControl::FloorTurningLeft(){
  */
 void WBRControl::GoForward(){
 
+	Serial.println("In GoForward.");
+
 	analogWrite(pinLeftMotorPWMGo,LEFT_PWM_SPEED);		//左モーターの速度を設定
 	analogWrite(pinLeftMotorPWMBack,0);					
 	
 	analogWrite(pinRightMotorPWMGo, RIGHT_PWM_SPEED);	//右のモータの速度を設定。
 	analogWrite(pinRightMotorPWMBack, 0);				
+
+	Serial.println("Out GoForward.");
 
 }
 
@@ -277,21 +317,26 @@ void WBRControl::GoForward(){
  */
 void WBRControl::StartupBatteryCheck(){
 	
+	Serial.println("In StartupBatteryCheck.");
+
 	if(analogRead(pinReadBattery) <= START_BATTERY){
 
 		delay(CHARGE_DELAY_TIME); 							//待つことによって充電	
 
 	}
+	Serial.println("Out StartupBatteryCheck.");
 
 }
 
 /**
  * 回転_Turn180deg						
- * 180度その場で回転する	
+ * 180度その場で回転する。内部処理的にはTurn90deg(1回目)→GoForward(車体の横幅一つ分)→Turn90deg(2回目)。
  * goとbackは同時に数値を入れない
  * turn関数は角判定、帰還で指定されている
  */
 void WBRControl::Turn180deg(int *turn){
+
+	Serial.println("In Turn180deg.");
 
 	Turn90deg(turn);								// 90度回転
 
@@ -329,7 +374,7 @@ void WBRControl::Turn180deg(int *turn){
 		*turn = NEXT_TURN_LEFT;		
 
 	}
-
+	Serial.println("Out Turn180deg.");
 }
 
 /**
@@ -339,17 +384,19 @@ void WBRControl::Turn180deg(int *turn){
  */
 void WBRControl::Turn90deg(int *turn){
 	
+	Serial.println("In Turn90deg.");
+
 	//右折
 	if (*turn == 0) {
 
 		// iの値は仮
 		for(int i = 1; i <= 5; i++){
 				
-			analogWrite(pinLeftMotorPWMGo,0);	
+			analogWrite(pinLeftMotorPWMGo,TURN_PWM);	
 			analogWrite(pinLeftMotorPWMBack,0);	//PWM値は仮	
 			
-			analogWrite(pinRightMotorPWMGo,TURN_PWM);
-			analogWrite(pinRightMotorPWMBack,0);		
+			analogWrite(pinRightMotorPWMGo,0);
+			analogWrite(pinRightMotorPWMBack,TURN_PWM);		
 			
 			delay(SPIN_DELAY_TIME);	
 
@@ -363,10 +410,10 @@ void WBRControl::Turn90deg(int *turn){
 		//iの値は仮
 		for(int i = 1; i <= 5; i++){
 				
-			analogWrite(pinLeftMotorPWMGo,TURN_PWM);
-			analogWrite(pinLeftMotorPWMBack,0);	
+			analogWrite(pinLeftMotorPWMGo,0);
+			analogWrite(pinLeftMotorPWMBack,TURN_PWM);	
 			
-			analogWrite(pinRightMotorPWMGo,0);
+			analogWrite(pinRightMotorPWMGo,TURN_PWM);
 			analogWrite(pinRightMotorPWMBack,0);
 			
 			delay(SPIN_DELAY_TIME);	
@@ -374,7 +421,7 @@ void WBRControl::Turn90deg(int *turn){
 		}
 
 	}
-
+	Serial.println("Out Turn90deg.");
 }
 
 /**
@@ -385,14 +432,19 @@ void WBRControl::Turn90deg(int *turn){
  */
 void WBRControl::BackHome(int *turn){
 	
-	int magnet_sencer   = digitalRead(pinMagnetSensor);		// 磁力センサの状態を取得(0で未検出、1で検出)
+	Serial.println("In BackHome.");
+
+	// 磁力センサが実装されていないときは下の文を用いる
+	//int magnet_sencer   = digitalRead(pinMagnetSensor);		// 磁力センサの状態を取得(0で未検出、1で検出)
+	int magnet_sencer   = 1;
 	
 	// 磁力センサが給電所からの磁力を検知していない場合(検知するまでループ)
+
     while(magnet_sencer == 0){ 
 
 		*turn=NEXT_TURN_RIGHT;								//turn関数を固定
     	
-		// ホワイトボード右側の端にぶつかるまで前進(前進関数内部で壁にぶつかったらこっちに戻ってくるとうれしい)
+		// ホワイトボード右側の端にぶつかるまで前進
 		while( FloorCheck()==FLOOR_EXIST){		
 
 			GoForward();	
@@ -404,5 +456,5 @@ void WBRControl::BackHome(int *turn){
 		delay(MGNET_SERACH_DELAY_TIME);						//　磁力感知がすぐできない場合を考慮  
 
 	}
-
+	Serial.println("Out BackHome.");
 }

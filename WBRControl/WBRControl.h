@@ -5,20 +5,21 @@
 #define BAD_BATTERY         0.5        //	バッテリーが無くなったの電圧
 
 //　FloorCheck
-#define FLOOR_EXIST         1          // 床あり
-#define FLOOR_NOTEXIST      0          // 床なし
+// (非常に残念なことに、床があるときにセンサが返す値は０[LOW]です)
+#define FLOOR_EXIST         0          // 床あり
+#define FLOOR_NOTEXIST      1          // 床なし
 
 //　CornerCheck
 #define CORNER_EXIST        1          // 角あり
 #define CORNER_NOTEXIST      0          // 角なし
 
 //　FloorDirectionturning
-#define TURN_PWM            160        // モーターの回転数
+#define TURN_PWM            145        // モーターの回転数
 #define FLOOR_DELAY_TIME 		100        // 調整時の待機時間
 
 //　GoForward
-#define RIGHT_PWM_SPEED			50         // 前進時右モーターの回転数
-#define LEFT_PWM_SPEED      50         // 前進時左モーターの回転数
+#define RIGHT_PWM_SPEED			179         // 前進時右モーターの回転数
+#define LEFT_PWM_SPEED      234         // 前進時左モーターの回転数
 
 //　StartBatteryCheck
 #define START_BATTERY 			3.5        //十分にバッテリーが充電されているときの電圧

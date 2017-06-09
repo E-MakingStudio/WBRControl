@@ -346,24 +346,16 @@ void WBRControl::Turn180deg(int *turn){
 
 	Turn90deg(turn);								// 90度回転
 
-	//　前進、iの値は仮
-	for(int i=1;i<=5;i++){
-			
+		analogWrite(pinLeftMotorPWMGo,LEFT_PWM_SPEED);		//車体分前進
+		analogWrite(pinLeftMotorPWMBack,0);					
+	
+		analogWrite(pinRightMotorPWMGo, RIGHT_PWM_SPEED);	。
+		analogWrite(pinRightMotorPWMBack, 0);	
+		Rotary_Encoder(1, 1);
+
 		analogWrite(pinLeftMotorPWMGo, 0);
-		analogWrite(pinLeftMotorPWMBack, 0);
-		
-		analogWrite(pinRightMotorPWMGo, TURN_PWM);
-		analogWrite(pinRightMotorPWMBack, 0);
-		
-		delay(SPIN_DELAY_TIME);
-
-		//　飛び出してないか判定、飛び出していた場合前進をやめる
-		if(digitalRead(pinFrontRightSensor) == 0 || digitalRead(pinFrontLeftSensor) == 0){
-
-			break;
-
-		}
-
+		analogWrite(pinRightMotorPWMGo, 0);
+	
 	}
 
 	Turn90deg(turn);	// 90度回転
@@ -394,9 +386,6 @@ void WBRControl::Turn90deg(int *turn){
 
 	//右折
 	if (*turn == 0) {
-
-		// iの値は仮
-		for(int i = 1; i <= 5; i++){
 				
 			analogWrite(pinLeftMotorPWMGo,TURN_PWM);	
 			analogWrite(pinLeftMotorPWMBack,0);	//PWM値は仮	
@@ -404,32 +393,20 @@ void WBRControl::Turn90deg(int *turn){
 			analogWrite(pinRightMotorPWMGo,0);
 			analogWrite(pinRightMotorPWMBack,TURN_PWM);		
 			
-			Rotary_Encoder(1, 1);	//タイヤの回転数を確認
-			
-			delay(SPIN_DELAY_TIME);	
-
-		}
-
+			Rotary_Encoder(1, 1);	//タイヤの回転数を確認			
 	}
 
 	// 左折
 	else {
 
-		//iの値は仮
-		for(int i = 1; i <= 5; i++){
-				
 			analogWrite(pinLeftMotorPWMGo,0);
 			analogWrite(pinLeftMotorPWMBack,TURN_PWM);	
 			
 			analogWrite(pinRightMotorPWMGo,TURN_PWM);
 			analogWrite(pinRightMotorPWMBack,0);
-			
+
 			Rotary_Encoder(1, 1);	//タイヤの回転数を確認
 			
-			delay(SPIN_DELAY_TIME);	
-
-		}
-
 	}
 	Serial.println("Out Turn90deg.");
 }

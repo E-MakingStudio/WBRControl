@@ -349,14 +349,14 @@ void WBRControl::Turn180deg(int *turn){
 		analogWrite(pinLeftMotorPWMGo,LEFT_PWM_SPEED);		//車体分前進
 		analogWrite(pinLeftMotorPWMBack,0);					
 	
-		analogWrite(pinRightMotorPWMGo, RIGHT_PWM_SPEED);	。
-		analogWrite(pinRightMotorPWMBack, 0);	
+		analogWrite(pinRightMotorPWMGo, RIGHT_PWM_SPEED);
+		analogWrite(pinRightMotorPWMBack, 0);
 		Rotary_Encoder(1, 1);
 
 		analogWrite(pinLeftMotorPWMGo, 0);
 		analogWrite(pinRightMotorPWMGo, 0);
 	
-	}
+	
 
 	Turn90deg(turn);	// 90度回転
 		

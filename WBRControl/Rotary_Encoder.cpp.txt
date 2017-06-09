@@ -1,0 +1,72 @@
+/**
+ *回転数確認_Rotary_Encoder
+ *左右のタイヤについているロータリーエンコーダのパルスを見て、タイヤが指定された回数回転するまで監視する
+ *いくつ回転してほしいかを回転数で入力してください。ex.半回転→0.5
+ */
+
+
+void WBRControl::Rotary_Encoder(int RightSpinCount_TargetValue, int LeftSpinCount_TargetValue){
+
+
+
+int pinRightRotary_Encoder;			//右モーターのロータリーエンコーダ出力ピン
+int pinLeftRotary_Encoder;			//左モーターのロータリーエンコーダ出力ピン
+int RightSpinCount;					//右ロータリーエンコーダのパルス出力を蓄積
+int LeftSpinCount;					//左ロータリーエンコーダのパルス出力を蓄積
+int RightSpinCount_TargetValue;		//右ロータリーエンコーダ―の目的のパルス数（関数呼び出し時に引数で持ってくる）
+int LeftSpinCount_TargetValue;		//左ロータリーエンコーダ―の目的のパルス数（関数呼び出し時に引数で持ってくる）
+
+
+	Serial.println("Start Rotary_Encoder Check.")
+	
+	RightSpinCount_TargetValue *= ROTARY_ENCODER_COUNT;
+	LeftSpinCount_TargetValue *= ROTARY_ENCODER_COUNT;
+	
+	while((RightSpinCount_TargetValue)>=RightSpinCount && (LeftSpinCount_TargetValue)>=LeftSpinCount){
+	
+		int R_right = digitalRead(pinRightRotary_Encoder);	//S_rightに右ロータリーエンコーダの出力を格納
+		int R_left = digitalRead(pinLeftRotary_Encoder);	//S_leftに左ロータリーエンコーダの出力を格納
+	
+		if(R_right==1){		//右ロータリーエンコーダからパルスが出力されたらカウントを追加
+		RightSpinCount++;
+		}
+	
+		if(R_left==1){		//左ロータリーエンコーダからパルスが出力されたらカウントを追加
+		LeftSpinCount++;
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	While(ROTARY_ENCODER_COUNT==RightSpinCount){
+	
+	int S_right = digitalRead(pinRightRotary_Encoder);	//右ロータリーエンコーダがパルスを出力しているか確認
+	
+		if(S_right==1){		//パルスが出力されたらカウントを追加
+		RightSpinCount++;
+		}
+	}
+	
+	
+	While(ROTARY_ENCODER_COUNT==LeftSpinCount){
+	
+	int S_left = digitalRead(pinLeftRotary_Encoder);	//左ロータリーエンコーダがパルスを出力しているか確認
+	
+		if(S_left==1){
+		LeftSpinCount++;
+		}
+	}
+}	
+	
+//タイヤの半径は２７ｍｍ

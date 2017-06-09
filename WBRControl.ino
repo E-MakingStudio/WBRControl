@@ -1,5 +1,7 @@
 #include <WBRControl.h>
 
+
+
 // ピン番号アサイン(0はセンサーを使用しないことを指定）
 #define LEFT_MOTOR_PWM_GO       11    // 左モーターのＰＷＭ正接出力ピン(デジタル)
 #define LEFT_MOTOR_PWM_BACK     10    // 左モーターのＰＷＭ逆接出力ピン(デジタル)
@@ -12,6 +14,8 @@
 #define SIDE_RIGHT_SENSOR       2     // 右側面センサのピン番号（デジタル）
 #define SIDE_LEFT_SENSOR        7     // 左側面センサのピン番号（デジタル）
 #define MAGNET_SENSOR           12    // 給電所で磁力を検知するためのセンサのピン番号(そもそもセンサが存在するのだろうか？)(センサ番号仮)
+#define RIGHT_ROTARY_ENCODER    15    // 右ロータリーエンコーダのセンサのピン番号
+#define LEFT_ROTARY_ENCODER     14    // 左ロータリーエンコーダのセンサのピン番号
 
 // ピン番号
 int rightMotorPWMGo     = RIGHT_MOTOR_PWM_GO;
@@ -25,7 +29,8 @@ int frontCenterSensor   = FRONT_CENTER_SENSOR;
 int sideRightSensor     = SIDE_RIGHT_SENSOR;
 int sideLeftSensor      = SIDE_LEFT_SENSOR;
 int magnetSensor        = MAGNET_SENSOR;
-
+int rightRotary_Encoder = RIGHT_ROTARY_ENCODER;
+int leftRotary_Encoder  = LEFT_ROTARY_ENCODER;
 
 WBRControl wbr( 
   rightMotorPWMGo,
@@ -38,7 +43,9 @@ WBRControl wbr(
   frontCenterSensor,
   sideRightSensor,
   sideLeftSensor,
-  magnetSensor
+  magnetSensor,
+  rightRotary_Encoder,
+  leftRotary_Encoder
   );
 
 void setup(){

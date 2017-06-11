@@ -1,6 +1,7 @@
 #.vscode ほんまキレタ　ID控えたからな
 /Debug/
-/_vm/
+/__vm/
 *.vcxproj
 *.filters
+/.vs/
 .vscode/

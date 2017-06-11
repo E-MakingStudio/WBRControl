@@ -57,13 +57,13 @@ int WBRCtrl::main()
 {
 	Direction direct;
 
-	if (IsBatteryFully(true) == false)
+	if (!CheckBattery(START_BATTERY))
 	{
 		delay(CHARGE_DELAY_TIME);
 	}
 
 	//“d’r‚ª‚È‚­‚È‚é‚Ü‚Åƒ‹[ƒv
-	while (IsBatteryFully(false) >= BAD_BATTERY)
+	while (!CheckBattery(BAD_BATTERY))
 	{
 		while (FloorCheck() == FLOOR_EXIST)
 		{
@@ -145,12 +145,10 @@ int WBRCtrl::CornerCheck(Direction *direct)
 }
 
 
-bool WBRCtrl::IsBatteryFully(bool isStart)
+bool WBRCtrl::CheckBattery(int batteryTartgetValue)
 {
 	int battery = analogRead(PinReadBattery);
-	if (isStart == true)
-		return  battery <= START_BATTERY;
-	return battery <= BAD_BATTERY;
+	return battery <= batteryTartgetValue ? false : true;
 }
 
 void WBRCtrl::FloorDirectionTurning()

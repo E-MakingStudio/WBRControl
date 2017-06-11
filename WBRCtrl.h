@@ -88,7 +88,7 @@ public:
 	void PinInitialization();
 	int FloorCheck();
 	int CornerCheck(Direction *direct);
-	bool IsBatteryFully(bool IsStart);
+	bool CheckBattery(int batteryTartgetValue);
 	void FloorDirectionTurning();
 	void FloorTurning(Direction dic);
 	void move();

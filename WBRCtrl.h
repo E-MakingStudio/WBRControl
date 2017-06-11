@@ -34,11 +34,16 @@
 
 
 #include <arduino.h>
-
+/**
+‰EA¶‚Ì•ûŒü‚Ì—ñ‹“Œ^
+**/
 enum Direction
 {
 	Right = 0, Left = 1
 };
+/**
+‰ñ“]‚ÌŠp“x‚Ì—ñ‹“Œ^
+**/
 enum Angle
 {
 	deg90, deg180

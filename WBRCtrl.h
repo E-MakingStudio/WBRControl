@@ -31,6 +31,7 @@
 #define SPINCOUNT_TARGETVALUE		4		//一回転に必要なパルス数
 //	
 #define SPINCOUNT_BODY_LENGTH	  114514			//一本体分移動する為のパルス数
+#define TURNCOUNT_TO_VERTICAL	1919810			//90回転するために必要な回転数
 
 
 #include <arduino.h>
@@ -91,11 +92,11 @@ public:
 	bool CheckBattery(int batteryTartgetValue);
 	void FloorDirectionTurning();
 	void FloorTurning(Direction dic);
-	void move();
-	void stop();
+	void Move();
+	void Stop();
 	void Turn(Angle angle,Direction *direct);
 	void BackHome(Direction *direct);
-	void Rotary_Encoder(int RSpinCount_TargetValue, int LSpinCount_TargetValue);
+	void RolltoStopByCount(int RSpinCount_TargetValue, int LSpinCount_TargetValue);
 
 };
 

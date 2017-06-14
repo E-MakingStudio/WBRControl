@@ -53,6 +53,9 @@ void WBRCtrl::PinInitialization()
 	pinMode(PinLRotary_Encoder, INPUT);
 }
 
+/*
+メイン関数
+*/
 int WBRCtrl::main()
 {
 	Direction direct;
@@ -67,7 +70,7 @@ int WBRCtrl::main()
 	{
 		while (FloorCheck() == FLOOR_EXIST)
 		{
-			move();
+			Move();
 		}
 		if (CornerCheck(&direct) == CORNER_EXIST)
 			break;
@@ -80,10 +83,9 @@ int WBRCtrl::main()
 
 }
 
-/**
-角の判定
-ルンバ本体の位置を確認する。
-**/
+/*
+ルンバがWBの端に到達したことを判定する
+*/
 int WBRCtrl::FloorCheck()
 {
 	int nRet = FLOOR_EXIST;
@@ -107,10 +109,9 @@ int WBRCtrl::FloorCheck()
 
 }
 
-/**
+/*
 
-
-**/
+*/
 int WBRCtrl::CornerCheck(Direction *direct)
 {
 	int nRet = CORNER_NOTEXIST;
@@ -144,11 +145,13 @@ int WBRCtrl::CornerCheck(Direction *direct)
 	return nRet;
 }
 
-
+/*
+バッテリー残量が指定の値以上かを判する関数
+batteryTartgetValue:バッテリーの残量(電圧)の閾値
+*/
 bool WBRCtrl::CheckBattery(int batteryTartgetValue)
 {
-	int battery = analogRead(PinReadBattery);
-	return battery <= batteryTartgetValue ? false : true;
+	return analogRead(PinReadBattery) <= batteryTartgetValue ? false : true;
 }
 
 void WBRCtrl::FloorDirectionTurning()
@@ -173,15 +176,15 @@ void WBRCtrl::FloorDirectionTurning()
 		}
 	}
 
-	analogWrite(PinLmotorPWMf, 0);
-	analogWrite(PinRmotorPWMf, 0);
-	analogWrite(PinLmotorPWMb, 0);
-	analogWrite(PinRmotorPWMb, 0);
+	Stop();
 
 	return;
 
 }
+/*
+床方向調整用
 
+*/
 void WBRCtrl::FloorTurning(Direction dic)
 {
 	if (dic == Right)
@@ -200,7 +203,10 @@ void WBRCtrl::FloorTurning(Direction dic)
 	return;
 }
 
-void WBRCtrl::move()
+/*
+前進
+*/
+void WBRCtrl::Move()
 {
 	analogWrite(PinLmotorPWMf, LEFT_PWM_SPEED);
 	analogWrite(PinLmotorPWMb, 0);
@@ -208,11 +214,13 @@ void WBRCtrl::move()
 	analogWrite(PinRmotorPWMf, RIGHT_PWM_SPEED);
 	analogWrite(PinRmotorPWMb, 0);
 
-	
+
 	return;
 }
-
-void WBRCtrl::stop()
+/*
+停止
+*/
+void WBRCtrl::Stop()
 {
 	analogWrite(PinLmotorPWMb, 0);
 	analogWrite(PinLmotorPWMf, 0);
@@ -223,6 +231,11 @@ void WBRCtrl::stop()
 	return;
 }
 
+/*
+方向転換
+angle:回転する角度
+direct:回転する方向
+*/
 void WBRCtrl::Turn(Angle angle, Direction *direct)
 {
 
@@ -239,9 +252,9 @@ void WBRCtrl::Turn(Angle angle, Direction *direct)
 
 	Turn(deg90, direct);
 
-	move();
-	Rotary_Encoder(1, 1);
-	stop();
+	Move();
+	RolltoStopByCount(1, 1);
+	Stop();
 
 	Turn(deg90, direct);
 
@@ -257,6 +270,9 @@ void WBRCtrl::Turn(Angle angle, Direction *direct)
 	return;
 
 }
+/*
+
+*/
 void WBRCtrl::BackHome(Direction *direct)
 {
 	int magnet_sencer = 1;
@@ -270,7 +286,7 @@ void WBRCtrl::BackHome(Direction *direct)
 		while (FloorCheck() == FLOOR_EXIST)
 		{
 
-			move();
+			Move();
 
 		}
 
@@ -281,11 +297,14 @@ void WBRCtrl::BackHome(Direction *direct)
 	}
 }
 
-void WBRCtrl::Rotary_Encoder(int RspinCount_TargetValue, int LspinCount_TargetValue)
+/*
+指定の回転を行ったら回転を止める関数
+*/
+void WBRCtrl::RolltoStopByCount(int RspinCount_TargetCount, int LspinCount_TargetCount)
 {
-	RspinCount_TargetValue, LspinCount_TargetValue *= SPINCOUNT_TARGETVALUE;
+	RspinCount_TargetCount, LspinCount_TargetCount *= SPINCOUNT_TARGETVALUE;
 
-	for (int RspinCount, LspinCount = 0; RspinCount_TargetValue >= RspinCount && LspinCount_TargetValue >= LspinCount;)
+	for (int RspinCount, LspinCount = 0; RspinCount_TargetCount >= RspinCount && LspinCount_TargetCount >= LspinCount;)
 	{
 		if (digitalRead(PinRRotary_Encoder) == 1)
 		{

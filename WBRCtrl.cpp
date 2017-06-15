@@ -72,7 +72,7 @@ int WBRCtrl::main()
 		{
 			Move();
 		}
-		if (CornerCheck(&direct) == CORNER_EXIST)
+		if (IsCorner(&direct))
 			break;
 		else
 		{
@@ -83,9 +83,12 @@ int WBRCtrl::main()
 
 }
 
-/*
-ルンバがWBの端に到達したことを判定する
-*/
+
+
+/// <summary>
+/// ルンバがホワイトボードの端に来たことを検知
+/// </summary>
+/// <returns>端かどうか</returns>
 int WBRCtrl::FloorCheck()
 {
 	int nRet = FLOOR_EXIST;
@@ -109,12 +112,13 @@ int WBRCtrl::FloorCheck()
 
 }
 
-/*
-
-*/
-int WBRCtrl::CornerCheck(Direction *direct)
+/// <summary>
+/// 角かどうかを確認する関数
+/// </summary>
+/// <param name="direct">回転方向</param>
+/// <returns>角であれば[true]でなければ[false]</returns>
+bool WBRCtrl::IsCorner()
 {
-	int nRet = CORNER_NOTEXIST;
 	int SideRcensor = digitalRead(PinSideRSensor);
 	int SideLcensor = digitalRead(PinSideLSensor);
 
@@ -126,29 +130,30 @@ int WBRCtrl::CornerCheck(Direction *direct)
 		{
 			if (SideLcensor == FLOOR_NOTEXIST)
 			{
-				*direct = (Direction)NEXT_TURN_RIGHT;
+				//*direct = (Direction)NEXT_TURN_RIGHT;
 			}
 
 			else
 			{
-				*direct = (Direction)NEXT_TURN_LEFT;
+				//*direct = (Direction)NEXT_TURN_LEFT;
 			}
 
 		}
 		else
 		{
-			nRet = CORNER_EXIST;
+			return true;
 		}
 		firstCorner++;
 	}
-
-	return nRet;
+	
+	return false;
 }
 
-/*
-バッテリー残量が指定の値以上かを判する関数
-batteryTartgetValue:バッテリーの残量(電圧)の閾値
-*/
+
+///<summary>バッテリーの残量確認</summary>
+///<param name='batteryTartgetValue'>バッテリー電圧値 </param>
+///<return>バッテリー電圧が所定の値を満たしているかどうか</return>
+///
 bool WBRCtrl::CheckBattery(int batteryTartgetValue)
 {
 	return analogRead(PinReadBattery) <= batteryTartgetValue ? false : true;
@@ -203,9 +208,9 @@ void WBRCtrl::FloorTurning(Direction dic)
 	return;
 }
 
-/*
-前進
-*/
+/// <summary>
+/// モーターの回転数を前進状態に設定する
+/// </summary>
 void WBRCtrl::Move()
 {
 	analogWrite(PinLmotorPWMf, LEFT_PWM_SPEED);
@@ -217,9 +222,9 @@ void WBRCtrl::Move()
 
 	return;
 }
-/*
-停止
-*/
+/// <summary>
+/// モーターの回転を停止状態に設定する
+/// </summary>
 void WBRCtrl::Stop()
 {
 	analogWrite(PinLmotorPWMb, 0);
@@ -231,11 +236,11 @@ void WBRCtrl::Stop()
 	return;
 }
 
-/*
-方向転換
-angle:回転する角度
-direct:回転する方向
-*/
+/// <summary>
+/// 回転を行う関数
+/// </summary>
+/// <param name="angle">角度[90deg,180deg]</param>
+/// <param name="direct">方向[Right,Left]</param>
 void WBRCtrl::Turn(Angle angle, Direction *direct)
 {
 
@@ -270,9 +275,7 @@ void WBRCtrl::Turn(Angle angle, Direction *direct)
 	return;
 
 }
-/*
 
-*/
 void WBRCtrl::BackHome(Direction *direct)
 {
 	int magnet_sencer = 1;
@@ -297,14 +300,16 @@ void WBRCtrl::BackHome(Direction *direct)
 	}
 }
 
-/*
-指定の回転を行ったら回転を止める関数
-*/
+/// <summary>
+/// 指定の回転数回転を行わせる関数
+/// </summary>
+/// <param name="RspinCount_TargetCount">右モーターの指定回転数</param>
+/// <param name="LspinCount_TargetCount">左モーターの指定回転数</param>
 void WBRCtrl::RolltoStopByCount(int RspinCount_TargetCount, int LspinCount_TargetCount)
 {
-	RspinCount_TargetCount, LspinCount_TargetCount *= SPINCOUNT_TARGETVALUE;
+	RspinCount_TargetCount, LspinCount_TargetCount *= SPINCOUNT_TARGETVALUE;//一回転あたりのパルス数と回転数をかけて必要なパルス数を算出
 
-	for (int RspinCount, LspinCount = 0; RspinCount_TargetCount >= RspinCount && LspinCount_TargetCount >= LspinCount;)
+	for (int RspinCount, LspinCount = 0; RspinCount_TargetCount >= RspinCount && LspinCount_TargetCount >= LspinCount;)//規定のパルス数パルスが発振されるまで繰り返す
 	{
 		if (digitalRead(PinRRotary_Encoder) == 1)
 		{
@@ -315,4 +320,33 @@ void WBRCtrl::RolltoStopByCount(int RspinCount_TargetCount, int LspinCount_Targe
 			LspinCount++;
 		}
 	}
+}
+
+/// <summary>
+/// 角までの距離を計測する関数
+/// </summary>
+/// <returns>タイヤの回転した回数</returns>
+int WBRCtrl::MeasureDistanceByRoll()
+{
+	Move();
+	int spinCount = 0;
+	for (int RspinCount,LspinCount = 0;;)
+	{
+		if (IsCorner())
+		{
+			Stop();
+			spinCount = RspinCount < LspinCount ? RspinCount : LspinCount;
+			break;
+		}
+		if (digitalRead(PinRRotary_Encoder) == 1)
+		{
+			RspinCount++;
+		}
+		if (digitalRead(PinLRotary_Encoder) == 1)
+		{
+			LspinCount++;
+		}
+	}
+	return spinCount/SPINCOUNT_TARGETVALUE;
+
 }

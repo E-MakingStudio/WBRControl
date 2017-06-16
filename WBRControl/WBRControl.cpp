@@ -257,7 +257,8 @@ void WBRControl::FloorDirectionTurning(){
 
 	// モーターの停止
 	analogWrite(pinLeftMotorPWMGo,0);
-	analogWrite(pinLeftMotorPWMBack,0);		
+	analogWrite(pinLeftMotorPWMBack,0);	
+
 	analogWrite(pinRightMotorPWMGo,0);
 	analogWrite(pinRightMotorPWMBack,0);
 
@@ -274,8 +275,9 @@ void WBRControl::FloorTurningRight(){
 
 	analogWrite(pinLeftMotorPWMGo,TURN_PWM);
 	analogWrite(pinLeftMotorPWMBack,0);			//　PWM値は仮
+
 	analogWrite(pinRightMotorPWMGo,0);
-	analogWrite(pinRightMotorPWMBack,TURN_PWM);
+	analogWrite(pinRightMotorPWMBack,0);
 
 	Serial.println("Out FloorTurningRight.");
 		
@@ -290,7 +292,8 @@ void WBRControl::FloorTurningLeft(){
 	Serial.println("In FloorTurningLeft.");
 
 	analogWrite(pinLeftMotorPWMGo,0);
-	analogWrite(pinLeftMotorPWMBack,TURN_PWM);		
+	analogWrite(pinLeftMotorPWMBack,0);	
+
 	analogWrite(pinRightMotorPWMGo,TURN_PWM);
 	analogWrite(pinRightMotorPWMBack,0);
 	
@@ -351,6 +354,7 @@ void WBRControl::Turn180deg(int *turn){
 	
 		analogWrite(pinRightMotorPWMGo, RIGHT_PWM_SPEED);
 		analogWrite(pinRightMotorPWMBack, 0);
+		
 		Rotary_Encoder(1, 1);
 
 		analogWrite(pinLeftMotorPWMGo, 0);
@@ -393,7 +397,7 @@ void WBRControl::Turn90deg(int *turn){
 			analogWrite(pinRightMotorPWMGo,0);
 			analogWrite(pinRightMotorPWMBack,TURN_PWM);		
 			
-			Rotary_Encoder(1, 1);	//タイヤの回転数を確認			
+			Rotary_Encoder(0.25, 0.25);	//タイヤの回転数を確認			
 	}
 
 	// 左折
@@ -405,7 +409,7 @@ void WBRControl::Turn90deg(int *turn){
 			analogWrite(pinRightMotorPWMGo,TURN_PWM);
 			analogWrite(pinRightMotorPWMBack,0);
 
-			Rotary_Encoder(1, 1);	//タイヤの回転数を確認
+			Rotary_Encoder(0.25, 0.25);	//タイヤの回転数を確認
 			
 	}
 	Serial.println("Out Turn90deg.");
@@ -450,29 +454,48 @@ void WBRControl::BackHome(int *turn){
  *回転数確認_Rotary_Encoder
  *左右のタイヤについているロータリーエンコーダのパルスを見て、タイヤが指定された回数回転するまで監視する
  *いくつ回転してほしいかを回転数で入力してください。ex.半回転→0.5
+ *車輪のサイズは17/6/16時点では56mm,車体の円の直径は180mmです.
  */
-void WBRControl::Rotary_Encoder(int RightSpinCount_TargetValue, int LeftSpinCount_TargetValue){
+void WBRControl::Rotary_Encoder(int LeftSpinCount_TargetValue, int RightSpinCount_TargetValue){
 
-int RightSpinCount = 0;					//右ロータリーエンコーダのパルス出力を蓄積
-int LeftSpinCount = 0;					//左ロータリーエンコーダのパルス出力を蓄積
+	int RightSpinCount = 0;					//右ロータリーエンコーダのパルス出力を蓄積
+	int LeftSpinCount = 0;					//左ロータリーエンコーダのパルス出力を蓄積
+
 	
 	Serial.println("Start Rotary_Encoder Check.");
+	
+
 	
 	RightSpinCount_TargetValue *= SPINCOUNT_TARGETVALUE;
 	LeftSpinCount_TargetValue *= SPINCOUNT_TARGETVALUE;		//一回転に必要なパルス数にタイヤの回転数をかけて、必要なパルス数を用意する
 	
-	
+	int beforeR_right = 1;
+	int beforeR_left = 1;
+
+
 	while(RightSpinCount_TargetValue >= RightSpinCount && LeftSpinCount_TargetValue >= LeftSpinCount){
 	
 		int R_right = digitalRead(pinRightRotary_Encoder);	//R_rightに右ロータリーエンコーダの出力を格納
 		int R_left = digitalRead(pinLeftRotary_Encoder);	//R_leftに左ロータリーエンコーダの出力を格納
 	
 		if(R_right==1){		//右ロータリーエンコーダからパルスが出力されたらカウントを追加
-		RightSpinCount++;
+			if(beforeR_right == 0){
+				RightSpinCount++;
+			}
 		}
 	
 		if(R_left==1){		//左ロータリーエンコーダからパルスが出力されたらカウントを追加
-		LeftSpinCount++;
+			if(beforeR_right == 0){
+				LeftSpinCount++;
+			}
 		}
+
+		beforeR_right = R_right;
+		beforeR_left = R_left;
+
 	}
+
+	Serial.println("End Rotary_Encoder Check.");
+	
+	
 }

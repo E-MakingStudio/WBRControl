@@ -461,18 +461,32 @@ int LeftSpinCount = 0;					//左ロータリーエンコーダのパルス出力
 	RightSpinCount_TargetValue *= SPINCOUNT_TARGETVALUE;
 	LeftSpinCount_TargetValue *= SPINCOUNT_TARGETVALUE;		//一回転に必要なパルス数にタイヤの回転数をかけて、必要なパルス数を用意する
 	
-	
+	int beforeR_right = 1;
+	int beforeR_left = 1;
+
+
 	while(RightSpinCount_TargetValue >= RightSpinCount && LeftSpinCount_TargetValue >= LeftSpinCount){
 	
 		int R_right = digitalRead(pinRightRotary_Encoder);	//R_rightに右ロータリーエンコーダの出力を格納
 		int R_left = digitalRead(pinLeftRotary_Encoder);	//R_leftに左ロータリーエンコーダの出力を格納
 	
 		if(R_right==1){		//右ロータリーエンコーダからパルスが出力されたらカウントを追加
-		RightSpinCount++;
+			if(beforeR_right == 1){
+				RightSpinCount++;
+			}
 		}
 	
 		if(R_left==1){		//左ロータリーエンコーダからパルスが出力されたらカウントを追加
-		LeftSpinCount++;
+			if(beforeR_right == 1){
+				LeftSpinCount++;
+			}
 		}
+
+		beforeR_right = R_right;
+		beforeR_left = R_left;
+
 	}
+
+	Serial.println("End Rotary_Encoder Check.");
+	
 }

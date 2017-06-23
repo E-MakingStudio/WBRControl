@@ -479,13 +479,21 @@ void WBRControl::Rotary_Encoder(int LeftSpinCount_TargetValue, int RightSpinCoun
 		int R_left = digitalRead(pinLeftRotary_Encoder);	//R_leftに左ロータリーエンコーダの出力を格納
 	
 		if(R_right==1){		//右ロータリーエンコーダからパルスが出力されたらカウントを追加
+<<<<<<< HEAD
 			if(beforeR_right == 0){
+=======
+			if(beforeR_right == 1){
+>>>>>>> d132ca1cf07e9e1be5b77cbbd88fe7a4068550cf
 				RightSpinCount++;
 			}
 		}
 	
 		if(R_left==1){		//左ロータリーエンコーダからパルスが出力されたらカウントを追加
+<<<<<<< HEAD
 			if(beforeR_right == 0){
+=======
+			if(beforeR_right == 1){
+>>>>>>> d132ca1cf07e9e1be5b77cbbd88fe7a4068550cf
 				LeftSpinCount++;
 			}
 		}
@@ -497,5 +505,8 @@ void WBRControl::Rotary_Encoder(int LeftSpinCount_TargetValue, int RightSpinCoun
 
 	Serial.println("End Rotary_Encoder Check.");
 	
+<<<<<<< HEAD
 	
+=======
+>>>>>>> d132ca1cf07e9e1be5b77cbbd88fe7a4068550cf
 }

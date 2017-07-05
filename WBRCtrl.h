@@ -66,6 +66,8 @@ private:
 	int	PinMagnetSensor;
 	int	PinRRotary_Encoder;
 	int	PinLRotary_Encoder;
+	int x_location;
+	int y_location;
 
 public:
 	WBRCtrl
@@ -87,16 +89,16 @@ public:
 
 	int	main();
 	void PinInitialization();
-	int FloorCheck();
+	bool IsEdge();
 	bool IsCorner();
 	bool CheckBattery(int batteryTartgetValue);
 	void FloorDirectionTurning();
-	void FloorTurning(Direction dic);
-	void Move();
-	void Stop();
-	void Turn(Angle angle,Direction *direct);
-	void BackHome(Direction *direct);
-	void RolltoStopByCount(int RSpinCount_TargetValue, int LSpinCount_TargetValue);
+	void SetPwmTurn(Direction dic);
+	void SetPwmMove();
+	void SetPwmStop();
+	void Turn(Angle angle,Direction direct);
+	void BackHome();
+	void StopRollByCount(int RSpinCount_TargetValue, int LSpinCount_TargetValue);
 	int MeasureDistanceByRoll();
 };
 

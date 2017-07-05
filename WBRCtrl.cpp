@@ -1,7 +1,7 @@
 #include "WBRCtrl.h"
 
 
-
+//
 WBRCtrl::WBRCtrl
 (
 	int _PinRmotorPWMf,
@@ -53,34 +53,57 @@ void WBRCtrl::PinInitialization()
 	pinMode(PinLRotary_Encoder, INPUT);
 }
 
-/*
-メイン関数
-*/
+/// <summary>
+/// メイン関数
+/// </summary>
+/// <returns></returns>
 int WBRCtrl::main()
 {
-	Direction direct;
+	Direction direct = Left;
 
-	if (!CheckBattery(START_BATTERY))
+	if (CheckBattery(START_BATTERY))//起動電圧に達していないことを確認
 	{
-		delay(CHARGE_DELAY_TIME);
+		delay(CHARGE_DELAY_TIME);//受電
 	}
 
-	//電池がなくなるまでループ
-	while (!CheckBattery(BAD_BATTERY))
+	while (CheckBattery(BAD_BATTERY))//起動最低電圧でないかを確認
 	{
-		while (FloorCheck() == FLOOR_EXIST)
+		SetPwmMove();
+		while (IsEdge() == true)
 		{
-			Move();
-		}
-		if (IsCorner(&direct))
-			break;
-		else
-		{
-			Turn(deg180, &direct);
-		}
-	}
-	BackHome(&direct);
+			if (IsCorner() == true)
+			{
+				Turn(deg180,direct);
 
+				direct = direct == Right ? Left : Right;//次の角の回転方向を決定する。
+
+				break;//continueでもいいけど気分で"Break"
+			}
+			FloorDirectionTurning();//モーターのPWMが停止状態で帰ってくるので注意
+		}
+		
+		//帰還用の関数を書く必要があります。
+
+	}
+
+	/*以下計測とそれに応じた挙動を設定するコード　論理的に破綻したためパージ
+	//計測開始
+	int width = MeasureDistanceByRoll();// / SPINCOUNT_BODY_LENGTH;//横方向の計測値/本体一体分の回転回数
+	Turn(deg90, Left);
+	int	height = MeasureDistanceByRoll()/ SPINCOUNT_BODY_LENGTH;//縦方向の計測値/本体一体分の回転回数
+	Turn(deg90, Left);
+	x_location = 0;
+	y_location = height;
+
+	while (y_location <= SPINCOUNT_BODY_LENGTH);
+	{
+		Move();
+		RolltoStopByCount(width,width);
+		Stop();
+		Turn(deg180, Left);
+	}
+
+	*/
 }
 
 
@@ -89,9 +112,9 @@ int WBRCtrl::main()
 /// ルンバがホワイトボードの端に来たことを検知
 /// </summary>
 /// <returns>端かどうか</returns>
-int WBRCtrl::FloorCheck()
+bool WBRCtrl::IsEdge()
 {
-	int nRet = FLOOR_EXIST;
+	int Edge = false;
 
 	int FRcensor = digitalRead(PinFRSensor);
 	int FLcensor = digitalRead(PinFLSensor);
@@ -99,16 +122,16 @@ int WBRCtrl::FloorCheck()
 
 	FCcensor = (PinFCSensor == 0) ? 0 : FCcensor;
 
-	if (FRcensor + FLcensor + FCcensor >= FLOOR_NOTEXIST)
+	if (FRcensor == FLOOR_NOTEXIST || FLcensor == FLOOR_NOTEXIST || FCcensor == FLOOR_NOTEXIST)//どれか一つにセンサーに引っかかったら
 	{
-		if (FRcensor != FLcensor)
+		if (FRcensor == FLOOR_EXIST || FLcensor == FLOOR_EXIST)
 		{
-			FloorDirectionTurning();
-
+			//FloorDirectionTurning();
+			return Edge = true;
 		}
-		nRet = FLOOR_NOTEXIST;
 	}
-	return nRet;
+
+	return Edge;
 
 }
 
@@ -122,28 +145,9 @@ bool WBRCtrl::IsCorner()
 	int SideRcensor = digitalRead(PinSideRSensor);
 	int SideLcensor = digitalRead(PinSideLSensor);
 
-	static int firstCorner = 0;
-
-	if (SideRcensor + SideLcensor >= FLOOR_NOTEXIST)
+	if (SideRcensor == FLOOR_EXIST || SideLcensor == FLOOR_EXIST)
 	{
-		if (firstCorner % 2 == 0)
-		{
-			if (SideLcensor == FLOOR_NOTEXIST)
-			{
-				//*direct = (Direction)NEXT_TURN_RIGHT;
-			}
-
-			else
-			{
-				//*direct = (Direction)NEXT_TURN_LEFT;
-			}
-
-		}
-		else
-		{
 			return true;
-		}
-		firstCorner++;
 	}
 	
 	return false;
@@ -158,7 +162,9 @@ bool WBRCtrl::CheckBattery(int batteryTartgetValue)
 {
 	return analogRead(PinReadBattery) <= batteryTartgetValue ? false : true;
 }
-
+/// <summary>
+/// ホワイトボード上下左右の、橋からルンバが飛び出そうとしたときに回転させてもとに戻る関数
+/// </summary>
 void WBRCtrl::FloorDirectionTurning()
 {
 	int Rcensor = digitalRead(PinFRSensor);
@@ -169,7 +175,7 @@ void WBRCtrl::FloorDirectionTurning()
 
 		while (digitalRead(PinFRSensor) != digitalRead(PinFLSensor))
 		{
-			FloorTurning(Left);
+			SetPwmTurn(Left);
 		}
 	}
 
@@ -177,11 +183,11 @@ void WBRCtrl::FloorDirectionTurning()
 	{
 		while (digitalRead(PinFRSensor) != digitalRead(PinFLSensor))
 		{
-			FloorTurning(Right);
+			SetPwmTurn(Right);
 		}
 	}
 
-	Stop();
+	SetPwmStop();
 
 	return;
 
@@ -190,7 +196,7 @@ void WBRCtrl::FloorDirectionTurning()
 床方向調整用
 
 */
-void WBRCtrl::FloorTurning(Direction dic)
+void WBRCtrl::SetPwmTurn(Direction dic)
 {
 	if (dic == Right)
 	{
@@ -211,7 +217,7 @@ void WBRCtrl::FloorTurning(Direction dic)
 /// <summary>
 /// モーターの回転数を前進状態に設定する
 /// </summary>
-void WBRCtrl::Move()
+void WBRCtrl::SetPwmMove()
 {
 	analogWrite(PinLmotorPWMf, LEFT_PWM_SPEED);
 	analogWrite(PinLmotorPWMb, 0);
@@ -225,7 +231,7 @@ void WBRCtrl::Move()
 /// <summary>
 /// モーターの回転を停止状態に設定する
 /// </summary>
-void WBRCtrl::Stop()
+void WBRCtrl::SetPwmStop()
 {
 	analogWrite(PinLmotorPWMb, 0);
 	analogWrite(PinLmotorPWMf, 0);
@@ -241,14 +247,14 @@ void WBRCtrl::Stop()
 /// </summary>
 /// <param name="angle">角度[90deg,180deg]</param>
 /// <param name="direct">方向[Right,Left]</param>
-void WBRCtrl::Turn(Angle angle, Direction *direct)
+void WBRCtrl::Turn(Angle angle, Direction direct)
 {
 
 	if (angle == deg90)
 	{
 		for (int i = 0; i < 5; i++)	//5は仮の値
 		{
-			FloorTurning(*direct);
+			SetPwmTurn(direct);
 
 			delay(SPIN_DELAY_TIME);
 		}
@@ -257,47 +263,30 @@ void WBRCtrl::Turn(Angle angle, Direction *direct)
 
 	Turn(deg90, direct);
 
-	Move();
-	RolltoStopByCount(1, 1);
-	Stop();
+	SetPwmMove();
+	StopRollByCount(1, 1);
+	SetPwmStop();
 
 	Turn(deg90, direct);
 
-	if (*direct == NEXT_TURN_LEFT)
+	if (direct == NEXT_TURN_LEFT)
 	{
-		*direct = (Direction)NEXT_TURN_RIGHT;
+		direct = (Direction)NEXT_TURN_RIGHT;
 	}
 
-	if (*direct == NEXT_TURN_RIGHT)
+	if (direct == NEXT_TURN_RIGHT)
 	{
-		*direct = (Direction)NEXT_TURN_LEFT;
+		direct = (Direction)NEXT_TURN_LEFT;
 	}
 	return;
 
 }
 
-void WBRCtrl::BackHome(Direction *direct)
+void WBRCtrl::BackHome()
 {
 	int magnet_sencer = 1;
 
-	while (magnet_sencer == 0)
-	{
-
-		*direct = (Direction)NEXT_TURN_RIGHT;								//turn関数を固定
-
-																// ホワイトボード右側の端にぶつかるまで前進
-		while (FloorCheck() == FLOOR_EXIST)
-		{
-
-			Move();
-
-		}
-
-		Turn(deg90, direct);           						// 旋回関数を用いて「その場」で時計回りに90度回転
-
-		delay(MGNET_SERACH_DELAY_TIME);						//　磁力感知がすぐできない場合を考慮  
-
-	}
+	
 }
 
 /// <summary>
@@ -305,7 +294,7 @@ void WBRCtrl::BackHome(Direction *direct)
 /// </summary>
 /// <param name="RspinCount_TargetCount">右モーターの指定回転数</param>
 /// <param name="LspinCount_TargetCount">左モーターの指定回転数</param>
-void WBRCtrl::RolltoStopByCount(int RspinCount_TargetCount, int LspinCount_TargetCount)
+void WBRCtrl::StopRollByCount(int RspinCount_TargetCount, int LspinCount_TargetCount)
 {
 	RspinCount_TargetCount, LspinCount_TargetCount *= SPINCOUNT_TARGETVALUE;//一回転あたりのパルス数と回転数をかけて必要なパルス数を算出
 
@@ -323,18 +312,18 @@ void WBRCtrl::RolltoStopByCount(int RspinCount_TargetCount, int LspinCount_Targe
 }
 
 /// <summary>
-/// 角までの距離を計測する関数
+/// 角までの距離(タイヤの回転回数)を計測する関数
 /// </summary>
 /// <returns>タイヤの回転した回数</returns>
 int WBRCtrl::MeasureDistanceByRoll()
 {
-	Move();
+	SetPwmMove();
 	int spinCount = 0;
 	for (int RspinCount,LspinCount = 0;;)
 	{
 		if (IsCorner())
 		{
-			Stop();
+			SetPwmStop();
 			spinCount = RspinCount < LspinCount ? RspinCount : LspinCount;
 			break;
 		}

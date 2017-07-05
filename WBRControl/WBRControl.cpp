@@ -501,7 +501,6 @@ void WBRControl::Rotary_Encoder(int RightSpinCount_TargetValue, int LeftSpinCoun
 		}
 	
 		if(R_left==0){		//左ロータリーエンコーダからパルスが出力されたらカウントを追加
-
 			if(beforeR_left == 1){
 
 				LeftSpinCount++;
@@ -515,5 +514,5 @@ void WBRControl::Rotary_Encoder(int RightSpinCount_TargetValue, int LeftSpinCoun
 	}
 
 	Serial.println("End Rotary_Encoder Check.");
-	
+
 }

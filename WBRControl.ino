@@ -1,7 +1,6 @@
 #include <WBRControl.h>
 
 
-
 // ピン番号アサイン(0はセンサーを使用しないことを指定）
 #define LEFT_MOTOR_PWM_GO       11    // 左モーターのＰＷＭ正接出力ピン(デジタル)
 #define LEFT_MOTOR_PWM_BACK     10    // 左モーターのＰＷＭ逆接出力ピン(デジタル)

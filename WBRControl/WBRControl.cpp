@@ -237,7 +237,7 @@ void WBRControl::FloorDirectionTurning(){
 		// while文の条件内でセンサの値を常に取得し直す。
 		while(digitalRead(pinFrontRightSensor) != digitalRead(pinFrontLeftSensor)){
 
-			FloorTurningLeft();						// 右のはみ出しを修正
+			FloorTurningLeft();						// 左のセンサのはみ出しを修正
 			
 
 		}
@@ -249,7 +249,7 @@ void WBRControl::FloorDirectionTurning(){
 		
 		while(digitalRead(pinFrontRightSensor) != digitalRead(pinFrontLeftSensor)){
 
-			FloorTurningRight();						// 左のはみ出しを修正		
+			FloorTurningRight();						// 右のセンサのはみ出しを修正		
 
 		}
 
@@ -347,9 +347,23 @@ void WBRControl::Turn180deg(int *turn){
 
 	Serial.println("In Turn180deg.");
 
-	Turn90deg(turn);								// 90度回転
+		// 回転の際にボードのフチに干渉しないように少し後方へ
+		analogWrite(pinLeftMotorPWMGo,0);
+		analogWrite(pinLeftMotorPWMBack,LEFT_PWM_SPEED);					
+	
+		analogWrite(pinRightMotorPWMGo, 0);
+		analogWrite(pinRightMotorPWMBack, RIGHT_PWM_SPEED);
+		
+		Rotary_Encoder(3, 3);
 
-		analogWrite(pinLeftMotorPWMGo,LEFT_PWM_SPEED);		//車体分前進
+		analogWrite(pinLeftMotorPWMGo, 0);
+		analogWrite(pinRightMotorPWMGo, 0);
+
+		// その場で90度回転
+		Turn90deg(turn);
+
+		//車体分前進
+		analogWrite(pinLeftMotorPWMGo,LEFT_PWM_SPEED);
 		analogWrite(pinLeftMotorPWMBack,0);					
 	
 		analogWrite(pinRightMotorPWMGo, RIGHT_PWM_SPEED);
@@ -359,11 +373,10 @@ void WBRControl::Turn180deg(int *turn){
 
 		analogWrite(pinLeftMotorPWMGo, 0);
 		analogWrite(pinRightMotorPWMGo, 0);
-	
-	
 
-	Turn90deg(turn);	// 90度回転
-		
+		// もう一度その場で90度回転
+		Turn90deg(turn);	
+
 	//　1だったら0、0だったら1のturnを返す
 	if(*turn == NEXT_TURN_LEFT){
 
@@ -397,7 +410,7 @@ void WBRControl::Turn90deg(int *turn){
 			analogWrite(pinRightMotorPWMGo,0);
 			analogWrite(pinRightMotorPWMBack,TURN_PWM);		
 			
-			Rotary_Encoder(0.25, 0.25);	//タイヤの回転数を確認			
+			Rotary_Encoder(2, 2);	//タイヤの回転数を確認			
 	}
 
 	// 左折
@@ -409,7 +422,7 @@ void WBRControl::Turn90deg(int *turn){
 			analogWrite(pinRightMotorPWMGo,TURN_PWM);
 			analogWrite(pinRightMotorPWMBack,0);
 
-			Rotary_Encoder(0.25, 0.25);	//タイヤの回転数を確認
+			Rotary_Encoder(2, 2);	//タイヤの回転数を確認
 			
 	}
 	Serial.println("Out Turn90deg.");
@@ -453,46 +466,49 @@ void WBRControl::BackHome(int *turn){
 /**
  *回転数確認_Rotary_Encoder
  *左右のタイヤについているロータリーエンコーダのパルスを見て、タイヤが指定された回数回転するまで監視する
- *いくつ回転してほしいかを回転数で入力してください。ex.半回転→0.5
+ *回転量の制御には「“x分の1”回転」のxを引数に入力してください。ex.半回転→引数は2(=2分の1回転)
+ *センサが羽を通過しているときは出力が0[LOW]、通過していないときは1[HI]が帰ってきます。
  *車輪のサイズは17/6/16時点では56mm,車体の円の直径は180mmです.
  */
-void WBRControl::Rotary_Encoder(int LeftSpinCount_TargetValue, int RightSpinCount_TargetValue){
+void WBRControl::Rotary_Encoder(int RightSpinCount_TargetValue, int LeftSpinCount_TargetValue){
 
-	int RightSpinCount = 0;					//右ロータリーエンコーダのパルス出力を蓄積
-	int LeftSpinCount = 0;					//左ロータリーエンコーダのパルス出力を蓄積
+	int RightSpinCount = 0;					//右ロータリーエンコーダのパルスの数を蓄積
+	int LeftSpinCount = 0;					//左ロータリーエンコーダのパルスの数を蓄積
 
-	
+
 	Serial.println("Start Rotary_Encoder Check.");
-	
 
+	//一回転に必要なパルス数にタイヤの回転数をかけて、必要なパルス数を用意する
+	//(ここで、呼びされたときに得た引数を用いて必要な回転量分のパルス数を計算)
+	RightSpinCount_TargetValue = SPINCOUNT_TARGETVALUE / RightSpinCount_TargetValue;
+	LeftSpinCount_TargetValue = SPINCOUNT_TARGETVALUE / LeftSpinCount_TargetValue;	
 	
-	RightSpinCount_TargetValue *= SPINCOUNT_TARGETVALUE;
-	LeftSpinCount_TargetValue *= SPINCOUNT_TARGETVALUE;		//一回転に必要なパルス数にタイヤの回転数をかけて、必要なパルス数を用意する
-	
-	int beforeR_right = 1;
-	int beforeR_left = 1;
+	// Whileループ内で前回のループのセンサの状態を保存する変数を定義
+	int beforeR_right = 0;
+	int beforeR_left = 0;
 
-
+	// ロータリーエンコーダーが、関数外で指定されたタイヤの回転数（入力ピンに入ってきたパルスの数）になるまで監視
 	while(RightSpinCount_TargetValue >= RightSpinCount && LeftSpinCount_TargetValue >= LeftSpinCount){
 	
-		int R_right = digitalRead(pinRightRotary_Encoder);	//R_rightに右ロータリーエンコーダの出力を格納
-		int R_left = digitalRead(pinLeftRotary_Encoder);	//R_leftに左ロータリーエンコーダの出力を格納
+		int R_right = digitalRead(pinRightRotary_Encoder);	//R_rightに右ロータリーエンコーダの出力を逐一格納
+		int R_left = digitalRead(pinLeftRotary_Encoder);	//R_leftに左ロータリーエンコーダの出力を逐一格納
 	
-		if(R_right==1){		//右ロータリーエンコーダからパルスが出力されたらカウントを追加
-			if(beforeR_right == 0){
+		if(R_right==0){		//右ロータリーエンコーダからパルスが出力されたらカウントを追加
+			if(beforeR_right == 1){
 
 				RightSpinCount++;
 			}
 		}
 	
-		if(R_left==1){		//左ロータリーエンコーダからパルスが出力されたらカウントを追加
+		if(R_left==0){		//左ロータリーエンコーダからパルスが出力されたらカウントを追加
 
-			if(beforeR_right == 0){
+			if(beforeR_left == 1){
 
 				LeftSpinCount++;
 			}
 		}
 
+		// 今回のセンサの状態を次のループへ持ち越す
 		beforeR_right = R_right;
 		beforeR_left = R_left;
 

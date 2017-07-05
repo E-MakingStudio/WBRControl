@@ -14,12 +14,12 @@
 #define CORNER_NOTEXIST		0		// 角なし
 
 //　FloorDirectionturning
-#define TURN_PWM				100		// モーターの回転数
+#define TURN_PWM				134		// モーターの回転数
 #define FLOOR_DELAY_TIME 		1		// 調整時の待機時間
 
 //　GoForward
-#define RIGHT_PWM_SPEED		169		// 前進時右モーターの回転数
-#define LEFT_PWM_SPEED		184		// 前進時左モーターの回転数
+#define RIGHT_PWM_SPEED		189		// 前進時右モーターの回転数
+#define LEFT_PWM_SPEED		204		// 前進時左モーターの回転数
 
 //　StartBatteryCheck
 #define START_BATTERY			3.5		//十分にバッテリーが充電されているときの電圧
@@ -34,8 +34,8 @@
 #define MGNET_SERACH_DELAY_TIME		500		// 磁力感知のための待機時間
 
 //　Rotary_Encoder
-#define ROTARY_ENCODER_SPIN		1		//タイヤの回転数を指定
-#define SPINCOUNT_TARGETVALUE		4		//一回転に必要なパルス数
+#define SPINCOUNT_TARGETVALUE		14		//一回転に必要なパルス数（2世代目の値、1世代目は4）
+
 
 #include "arduino.h"
 

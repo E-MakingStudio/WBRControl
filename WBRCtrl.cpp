@@ -4,338 +4,343 @@
 //
 WBRCtrl::WBRCtrl
 (
-	int _PinRmotorPWMf,
-	int	_PinLmotorPWMf,
-	int _PinRmotorPWMb,
-	int _PinLmotorPWMb,
-	int _PinReadBattery,
-	int	_PinFRSensor,
-	int	_PinFLSensor,
-	int	_PinFCSensor,
-	int	_PinSideRSensor,
-	int	_PinSideLSensor,
-	int	_PinMagnetSensor,
-	int	_PinRRotary_Encoder,
-	int	_PinLRotary_Encoder
+  int _PinRmotorPWMf,
+  int	_PinLmotorPWMf,
+  int _PinRmotorPWMb,
+  int _PinLmotorPWMb,
+  int _PinReadBattery,
+  int	_PinFRSensor,
+  int	_PinFLSensor,
+  int	_PinFCSensor,
+  int	_PinSideRSensor,
+  int	_PinSideLSensor,
+  int	_PinMagnetSensor,
+  int	_PinRRotary_Encoder,
+  int	_PinLRotary_Encoder
 
 )
 {
-	PinRmotorPWMf = _PinRmotorPWMf;
-	PinLmotorPWMf = _PinLmotorPWMf;
-	PinRmotorPWMb = _PinRmotorPWMb;
-	PinLmotorPWMb = _PinLmotorPWMb;
-	PinReadBattery = _PinReadBattery;
-	PinFRSensor = _PinFRSensor;
-	PinFLSensor = _PinFLSensor;
-	PinFCSensor = _PinFCSensor;
-	PinSideRSensor = _PinSideRSensor;
-	PinSideLSensor = _PinSideLSensor;
-	PinMagnetSensor = _PinMagnetSensor;
-	PinRRotary_Encoder = _PinRRotary_Encoder;
-	PinLRotary_Encoder = _PinLRotary_Encoder;
+  PinRmotorPWMf = _PinRmotorPWMf;
+  PinLmotorPWMf = _PinLmotorPWMf;
+  PinRmotorPWMb = _PinRmotorPWMb;
+  PinLmotorPWMb = _PinLmotorPWMb;
+  PinReadBattery = _PinReadBattery;
+  PinFRSensor = _PinFRSensor;
+  PinFLSensor = _PinFLSensor;
+  PinFCSensor = _PinFCSensor;
+  PinSideRSensor = _PinSideRSensor;
+  PinSideLSensor = _PinSideLSensor;
+  PinMagnetSensor = _PinMagnetSensor;
+  PinRRotary_Encoder = _PinRRotary_Encoder;
+  PinLRotary_Encoder = _PinLRotary_Encoder;
 
 
 }
 void WBRCtrl::PinInitialization()
 {
-	pinMode(PinRmotorPWMf, OUTPUT);
-	pinMode(PinLmotorPWMf, OUTPUT);
-	pinMode(PinRmotorPWMb, OUTPUT);
-	pinMode(PinLmotorPWMb, OUTPUT);
-	pinMode(PinReadBattery, INPUT);
-	pinMode(PinFLSensor, INPUT);
-	pinMode(PinFCSensor, INPUT);
-	pinMode(PinFRSensor, INPUT);
-	pinMode(PinSideRSensor, INPUT);
-	pinMode(PinSideLSensor, INPUT);
-	pinMode(PinMagnetSensor, INPUT);
-	pinMode(PinRRotary_Encoder, INPUT);
-	pinMode(PinLRotary_Encoder, INPUT);
+  pinMode(PinRmotorPWMf, OUTPUT);
+  pinMode(PinLmotorPWMf, OUTPUT);
+  pinMode(PinRmotorPWMb, OUTPUT);
+  pinMode(PinLmotorPWMb, OUTPUT);
+  pinMode(PinReadBattery, INPUT);
+  pinMode(PinFLSensor, INPUT);
+  pinMode(PinFCSensor, INPUT);
+  pinMode(PinFRSensor, INPUT);
+  pinMode(PinSideRSensor, INPUT);
+  pinMode(PinSideLSensor, INPUT);
+  pinMode(PinMagnetSensor, INPUT);
+  pinMode(PinRRotary_Encoder, INPUT);
+  pinMode(PinLRotary_Encoder, INPUT);
 }
 
 /// <summary>
-/// ƒƒCƒ“ŠÖ”
+/// ãƒ¡ã‚¤ãƒ³é–¢æ•°
 /// </summary>
 /// <returns></returns>
 int WBRCtrl::main()
 {
-	Direction direct = Left;
+  Direction direct = Left;
 
-	if (CheckBattery(START_BATTERY))//‹N“®“dˆ³‚É’B‚µ‚Ä‚¢‚È‚¢‚±‚Æ‚ğŠm”F
-	{
-		delay(CHARGE_DELAY_TIME);//ó“d
-	}
+  if (CheckBattery(START_BATTERY))//èµ·å‹•é›»åœ§ã«é”ã—ã¦ã„ãªã„ã“ã¨ã‚’ç¢ºèª
+  {
+    delay(CHARGE_DELAY_TIME);//å—é›»
+  }
 
-	while (CheckBattery(BAD_BATTERY))//‹N“®Å’á“dˆ³‚Å‚È‚¢‚©‚ğŠm”F
-	{
-		SetPwmMove();
-		while (IsEdge() == true)
-		{
-			if (IsCorner() == true)
-			{
-				Turn(deg180,direct);
+  while (CheckBattery(BAD_BATTERY))//èµ·å‹•æœ€ä½é›»åœ§ã§ãªã„ã‹ã‚’ç¢ºèª
+  {
+    SetPwmMove();
+    
+    while (IsEdge() == true)
+    {
+      if (IsCorner() == true)
+      {
+        Turn(deg180, direct);
 
-				direct = direct == Right ? Left : Right;//Ÿ‚ÌŠp‚Ì‰ñ“]•ûŒü‚ğŒˆ’è‚·‚éB
+        direct = direct == Right ? Left : Right;//æ¬¡ã®è§’ã®å›è»¢æ–¹å‘ã‚’æ±ºå®šã™ã‚‹ã€‚
 
-				break;//continue‚Å‚à‚¢‚¢‚¯‚Ç‹C•ª‚Å"Break"
-			}
-			FloorDirectionTurning();//ƒ‚[ƒ^[‚ÌPWM‚ª’â~ó‘Ô‚Å‹A‚Á‚Ä‚­‚é‚Ì‚Å’ˆÓ
-		}
-		
-		//‹AŠÒ—p‚ÌŠÖ”‚ğ‘‚­•K—v‚ª‚ ‚è‚Ü‚·B
+        break;//continueã§ã‚‚ã„ã„ã‘ã©æ°—åˆ†ã§"Break"
+      }
+      FloorDirectionTurning();//ãƒ¢ãƒ¼ã‚¿ãƒ¼ã®PWMãŒåœæ­¢çŠ¶æ…‹ã§å¸°ã£ã¦ãã‚‹ã®ã§æ³¨æ„
+    }
 
-	}
+    //å¸°é‚„ç”¨ã®é–¢æ•°ã‚’æ›¸ãå¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚
+      
+  }
+    
+  /*ä»¥ä¸‹è¨ˆæ¸¬ã¨ãã‚Œã«å¿œã˜ãŸæŒ™å‹•ã‚’è¨­å®šã™ã‚‹ã‚³ãƒ¼ãƒ‰ã€€è«–ç†çš„ã«ç ´ç¶»ã—ãŸãŸã‚ãƒ‘ãƒ¼ã‚¸
+    //è¨ˆæ¸¬é–‹å§‹
+    int width = MeasureDistanceByRoll();// / SPINCOUNT_BODY_LENGTH;//æ¨ªæ–¹å‘ã®è¨ˆæ¸¬å€¤/æœ¬ä½“ä¸€ä½“åˆ†ã®å›è»¢å›æ•°
+    Turn(deg90, Left);
+    int	height = MeasureDistanceByRoll()/ SPINCOUNT_BODY_LENGTH;//ç¸¦æ–¹å‘ã®è¨ˆæ¸¬å€¤/æœ¬ä½“ä¸€ä½“åˆ†ã®å›è»¢å›æ•°
+    Turn(deg90, Left);
+    x_location = 0;
+    y_location = height;
 
-	/*ˆÈ‰ºŒv‘ª‚Æ‚»‚ê‚É‰‚¶‚½‹““®‚ğİ’è‚·‚éƒR[ƒh@˜_—“I‚É”j’]‚µ‚½‚½‚ßƒp[ƒW
-	//Œv‘ªŠJn
-	int width = MeasureDistanceByRoll();// / SPINCOUNT_BODY_LENGTH;//‰¡•ûŒü‚ÌŒv‘ª’l/–{‘Ìˆê‘Ì•ª‚Ì‰ñ“]‰ñ”
-	Turn(deg90, Left);
-	int	height = MeasureDistanceByRoll()/ SPINCOUNT_BODY_LENGTH;//c•ûŒü‚ÌŒv‘ª’l/–{‘Ìˆê‘Ì•ª‚Ì‰ñ“]‰ñ”
-	Turn(deg90, Left);
-	x_location = 0;
-	y_location = height;
+    while (y_location <= SPINCOUNT_BODY_LENGTH);
+    {
+  	Move();
+  	RolltoStopByCount(width,width);
+  	Stop();
+  	Turn(deg180, Left);
+    }
 
-	while (y_location <= SPINCOUNT_BODY_LENGTH);
-	{
-		Move();
-		RolltoStopByCount(width,width);
-		Stop();
-		Turn(deg180, Left);
-	}
-
-	*/
+  */
 }
 
 
 
 /// <summary>
-/// ƒ‹ƒ“ƒo‚ªƒzƒƒCƒgƒ{[ƒh‚Ì’[‚É—ˆ‚½‚±‚Æ‚ğŒŸ’m
+/// ãƒ«ãƒ³ãƒãŒãƒ›ãƒ¯ã‚¤ãƒˆãƒœãƒ¼ãƒ‰ã®ç«¯ã«æ¥ãŸã“ã¨ã‚’æ¤œçŸ¥
 /// </summary>
-/// <returns>’[‚©‚Ç‚¤‚©</returns>
+/// <returns>ç«¯ã‹ã©ã†ã‹</returns>
 bool WBRCtrl::IsEdge()
 {
-	int Edge = false;
+  int Edge = false;
 
-	int FRcensor = digitalRead(PinFRSensor);
-	int FLcensor = digitalRead(PinFLSensor);
-	int FCcensor = digitalRead(PinFCSensor);
+  int FRcensor = digitalRead(PinFRSensor);
+  int FLcensor = digitalRead(PinFLSensor);
+  int FCcensor = digitalRead(PinFCSensor);
 
-	FCcensor = (PinFCSensor == 0) ? 0 : FCcensor;
+  FCcensor = (PinFCSensor == 0) ? 0 : FCcensor;
 
-	if (FRcensor == FLOOR_NOTEXIST || FLcensor == FLOOR_NOTEXIST || FCcensor == FLOOR_NOTEXIST)//‚Ç‚ê‚©ˆê‚Â‚ÉƒZƒ“ƒT[‚Éˆø‚Á‚©‚©‚Á‚½‚ç
-	{
-		if (FRcensor == FLOOR_EXIST || FLcensor == FLOOR_EXIST)
-		{
-			//FloorDirectionTurning();
-			return Edge = true;
-		}
-	}
+  if (FRcensor == FLOOR_NOTEXIST || FLcensor == FLOOR_NOTEXIST || FCcensor == FLOOR_NOTEXIST)//ã©ã‚Œã‹ä¸€ã¤ã«ã‚»ãƒ³ã‚µãƒ¼ã«å¼•ã£ã‹ã‹ã£ãŸã‚‰
+  {
+    if (FRcensor == FLOOR_EXIST || FLcensor == FLOOR_EXIST)
+    {
+      //FloorDirectionTurning();
+      return Edge = true;
+    }
+  }
 
-	return Edge;
+  return Edge;
 
 }
 
 /// <summary>
-/// Šp‚©‚Ç‚¤‚©‚ğŠm”F‚·‚éŠÖ”
+/// è§’ã‹ã©ã†ã‹ã‚’ç¢ºèªã™ã‚‹é–¢æ•°
 /// </summary>
-/// <param name="direct">‰ñ“]•ûŒü</param>
-/// <returns>Šp‚Å‚ ‚ê‚Î[true]‚Å‚È‚¯‚ê‚Î[false]</returns>
+/// <param name="direct">å›è»¢æ–¹å‘</param>
+/// <returns>è§’ã§ã‚ã‚Œã°[true]ã§ãªã‘ã‚Œã°[false]</returns>
 bool WBRCtrl::IsCorner()
 {
-	int SideRcensor = digitalRead(PinSideRSensor);
-	int SideLcensor = digitalRead(PinSideLSensor);
+  int SideRcensor = digitalRead(PinSideRSensor);
+  int SideLcensor = digitalRead(PinSideLSensor);
 
-	if (SideRcensor == FLOOR_EXIST || SideLcensor == FLOOR_EXIST)
-	{
-			return true;
-	}
-	
-	return false;
+  if (SideRcensor == FLOOR_EXIST || SideLcensor == FLOOR_EXIST)
+  {
+    return true;
+  }
+
+  return false;
 }
 
 
-///<summary>ƒoƒbƒeƒŠ[‚Ìc—ÊŠm”F</summary>
-///<param name='batteryTartgetValue'>ƒoƒbƒeƒŠ[“dˆ³’l </param>
-///<return>ƒoƒbƒeƒŠ[“dˆ³‚ªŠ’è‚Ì’l‚ğ–‚½‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©</return>
+///<summary>ãƒãƒƒãƒ†ãƒªãƒ¼ã®æ®‹é‡ç¢ºèª</summary>
+///<param name='batteryTartgetValue'>ãƒãƒƒãƒ†ãƒªãƒ¼é›»åœ§å€¤ </param>
+///<return>ãƒãƒƒãƒ†ãƒªãƒ¼é›»åœ§ãŒæ‰€å®šã®å€¤ã‚’æº€ãŸã—ã¦ã„ã‚‹ã‹ã©ã†ã‹</return>
 ///
 bool WBRCtrl::CheckBattery(int batteryTartgetValue)
 {
-	return analogRead(PinReadBattery) <= batteryTartgetValue ? false : true;
+  return analogRead(PinReadBattery) <= batteryTartgetValue ? false : true;
 }
 /// <summary>
-/// ƒzƒƒCƒgƒ{[ƒhã‰º¶‰E‚ÌA‹´‚©‚çƒ‹ƒ“ƒo‚ª”ò‚Ño‚»‚¤‚Æ‚µ‚½‚Æ‚«‚É‰ñ“]‚³‚¹‚Ä‚à‚Æ‚É–ß‚éŠÖ”
+/// ãƒ›ãƒ¯ã‚¤ãƒˆãƒœãƒ¼ãƒ‰ä¸Šä¸‹å·¦å³ã®ã€æ©‹ã‹ã‚‰ãƒ«ãƒ³ãƒãŒé£›ã³å‡ºãã†ã¨ã—ãŸã¨ãã«å›è»¢ã•ã›ã¦ã‚‚ã¨ã«æˆ»ã‚‹é–¢æ•°
 /// </summary>
 void WBRCtrl::FloorDirectionTurning()
 {
-	int Rcensor = digitalRead(PinFRSensor);
-	int Lcensor = digitalRead(PinFLSensor);
+  int Rcensor = digitalRead(PinFRSensor);
+  int Lcensor = digitalRead(PinFLSensor);
 
-	if (Rcensor == FLOOR_EXIST)
-	{
+  if (Rcensor == FLOOR_EXIST)
+  {
 
-		while (digitalRead(PinFRSensor) != digitalRead(PinFLSensor))
-		{
-			SetPwmTurn(Left);
-		}
-	}
+    while (digitalRead(PinFRSensor) != digitalRead(PinFLSensor))
+    {
+      SetPwmTurn(Left);
+    }
+  }
 
-	if (Lcensor == FLOOR_EXIST)
-	{
-		while (digitalRead(PinFRSensor) != digitalRead(PinFLSensor))
-		{
-			SetPwmTurn(Right);
-		}
-	}
+  if (Lcensor == FLOOR_EXIST)
+  {
+    while (digitalRead(PinFRSensor) != digitalRead(PinFLSensor))
+    {
+      SetPwmTurn(Right);
+    }
+  }
 
-	SetPwmStop();
+  SetPwmStop();
 
-	return;
+  return;
 
 }
 /*
-°•ûŒü’²®—p
+  åºŠæ–¹å‘èª¿æ•´ç”¨
 
 */
 void WBRCtrl::SetPwmTurn(Direction dic)
 {
-	if (dic == Right)
-	{
-		analogWrite(PinLmotorPWMf, TURN_PWM);
-		analogWrite(PinLmotorPWMb, 0);
-		analogWrite(PinRmotorPWMf, 0);
-		analogWrite(PinRmotorPWMb, TURN_PWM);
-		return;
-	}
-	analogWrite(PinLmotorPWMf, 0);
-	analogWrite(PinLmotorPWMb, TURN_PWM);
-	analogWrite(PinRmotorPWMf, TURN_PWM);
-	analogWrite(PinRmotorPWMb, 0);
+  if (dic == Right)
+  {
+    analogWrite(PinLmotorPWMf, TURN_PWM);
+    analogWrite(PinLmotorPWMb, 0);
+    analogWrite(PinRmotorPWMf, 0);
+    analogWrite(PinRmotorPWMb, TURN_PWM);
+    return;
+  }
+  analogWrite(PinLmotorPWMf, 0);
+  analogWrite(PinLmotorPWMb, TURN_PWM);
+  analogWrite(PinRmotorPWMf, TURN_PWM);
+  analogWrite(PinRmotorPWMb, 0);
 
-	return;
+  return;
 }
 
 /// <summary>
-/// ƒ‚[ƒ^[‚Ì‰ñ“]”‚ğ‘Oió‘Ô‚Éİ’è‚·‚é
+/// ãƒ¢ãƒ¼ã‚¿ãƒ¼ã®å›è»¢æ•°ã‚’å‰é€²çŠ¶æ…‹ã«è¨­å®šã™ã‚‹
 /// </summary>
 void WBRCtrl::SetPwmMove()
 {
-	analogWrite(PinLmotorPWMf, LEFT_PWM_SPEED);
-	analogWrite(PinLmotorPWMb, 0);
+  analogWrite(PinLmotorPWMf, RIGHT_PWM_SPEED);
+  analogWrite(PinLmotorPWMb, 0);
 
-	analogWrite(PinRmotorPWMf, RIGHT_PWM_SPEED);
-	analogWrite(PinRmotorPWMb, 0);
+ 
+
+  analogWrite(PinRmotorPWMf, LEFT_PWM_SPEED);
+  analogWrite(PinRmotorPWMb, 0);
 
 
-	return;
+
+  return;
 }
 /// <summary>
-/// ƒ‚[ƒ^[‚Ì‰ñ“]‚ğ’â~ó‘Ô‚Éİ’è‚·‚é
+/// ãƒ¢ãƒ¼ã‚¿ãƒ¼ã®å›è»¢ã‚’åœæ­¢çŠ¶æ…‹ã«è¨­å®šã™ã‚‹
 /// </summary>
 void WBRCtrl::SetPwmStop()
 {
-	analogWrite(PinLmotorPWMb, 0);
-	analogWrite(PinLmotorPWMf, 0);
+  analogWrite(PinLmotorPWMb, 0);
+  analogWrite(PinLmotorPWMf, 0);
 
-	analogWrite(PinRmotorPWMb, 0);
-	analogWrite(PinRmotorPWMf, 0);
+  analogWrite(PinRmotorPWMb, 0);
+  analogWrite(PinRmotorPWMf, 0);
 
-	return;
+  return;
 }
 
 /// <summary>
-/// ‰ñ“]‚ğs‚¤ŠÖ”
+/// å›è»¢ã‚’è¡Œã†é–¢æ•°
 /// </summary>
-/// <param name="angle">Šp“x[90deg,180deg]</param>
-/// <param name="direct">•ûŒü[Right,Left]</param>
+/// <param name="angle">è§’åº¦[90deg,180deg]</param>
+/// <param name="direct">æ–¹å‘[Right,Left]</param>
 void WBRCtrl::Turn(Angle angle, Direction direct)
 {
 
-	if (angle == deg90)
-	{
-		for (int i = 0; i < 5; i++)	//5‚Í‰¼‚Ì’l
-		{
-			SetPwmTurn(direct);
+  if (angle == deg90)
+  {
+    for (int i = 0; i < 5; i++)	//5ã¯ä»®ã®å€¤
+    {
+      SetPwmTurn(direct);
 
-			delay(SPIN_DELAY_TIME);
-		}
-		return;
-	}
+      delay(SPIN_DELAY_TIME);
+    }
+    return;
+  }
 
-	Turn(deg90, direct);
+  Turn(deg90, direct);
 
-	SetPwmMove();
-	StopRollByCount(1, 1);
-	SetPwmStop();
+  SetPwmMove();
+  StopRollByCount(1, 1);
+  SetPwmStop();
 
-	Turn(deg90, direct);
+  Turn(deg90, direct);
 
-	if (direct == NEXT_TURN_LEFT)
-	{
-		direct = (Direction)NEXT_TURN_RIGHT;
-	}
+  if (direct == NEXT_TURN_LEFT)
+  {
+    direct = (Direction)NEXT_TURN_RIGHT;
+  }
 
-	if (direct == NEXT_TURN_RIGHT)
-	{
-		direct = (Direction)NEXT_TURN_LEFT;
-	}
-	return;
+  if (direct == NEXT_TURN_RIGHT)
+  {
+    direct = (Direction)NEXT_TURN_LEFT;
+  }
+  return;
 
 }
 
 void WBRCtrl::BackHome()
 {
-	int magnet_sencer = 1;
+  int magnet_sencer = 1;
 
-	
+
 }
 
 /// <summary>
-/// w’è‚Ì‰ñ“]”‰ñ“]‚ğs‚í‚¹‚éŠÖ”
+/// æŒ‡å®šã®å›è»¢æ•°å›è»¢ã‚’è¡Œã‚ã›ã‚‹é–¢æ•°
 /// </summary>
-/// <param name="RspinCount_TargetCount">‰Eƒ‚[ƒ^[‚Ìw’è‰ñ“]”</param>
-/// <param name="LspinCount_TargetCount">¶ƒ‚[ƒ^[‚Ìw’è‰ñ“]”</param>
+/// <param name="RspinCount_TargetCount">å³ãƒ¢ãƒ¼ã‚¿ãƒ¼ã®æŒ‡å®šå›è»¢æ•°</param>
+/// <param name="LspinCount_TargetCount">å·¦ãƒ¢ãƒ¼ã‚¿ãƒ¼ã®æŒ‡å®šå›è»¢æ•°</param>
 void WBRCtrl::StopRollByCount(int RspinCount_TargetCount, int LspinCount_TargetCount)
 {
-	RspinCount_TargetCount, LspinCount_TargetCount *= SPINCOUNT_TARGETVALUE;//ˆê‰ñ“]‚ ‚½‚è‚Ìƒpƒ‹ƒX”‚Æ‰ñ“]”‚ğ‚©‚¯‚Ä•K—v‚Èƒpƒ‹ƒX”‚ğZo
+  RspinCount_TargetCount, LspinCount_TargetCount *= SPINCOUNT_TARGETVALUE;//ä¸€å›è»¢ã‚ãŸã‚Šã®ãƒ‘ãƒ«ã‚¹æ•°ã¨å›è»¢æ•°ã‚’ã‹ã‘ã¦å¿…è¦ãªãƒ‘ãƒ«ã‚¹æ•°ã‚’ç®—å‡º
 
-	for (int RspinCount, LspinCount = 0; RspinCount_TargetCount >= RspinCount && LspinCount_TargetCount >= LspinCount;)//‹K’è‚Ìƒpƒ‹ƒX”ƒpƒ‹ƒX‚ª”­U‚³‚ê‚é‚Ü‚ÅŒJ‚è•Ô‚·
-	{
-		if (digitalRead(PinRRotary_Encoder) == 1)
-		{
-			RspinCount++;
-		}
-		if (digitalRead(PinLRotary_Encoder) == 1)
-		{
-			LspinCount++;
-		}
-	}
+  for (int RspinCount, LspinCount = 0; RspinCount_TargetCount >= RspinCount && LspinCount_TargetCount >= LspinCount;)//è¦å®šã®ãƒ‘ãƒ«ã‚¹æ•°ãƒ‘ãƒ«ã‚¹ãŒç™ºæŒ¯ã•ã‚Œã‚‹ã¾ã§ç¹°ã‚Šè¿”ã™
+  {
+    if (digitalRead(PinRRotary_Encoder) == 1)
+    {
+      RspinCount++;
+    }
+    if (digitalRead(PinLRotary_Encoder) == 1)
+    {
+      LspinCount++;
+    }
+  }
 }
 
 /// <summary>
-/// Šp‚Ü‚Å‚Ì‹——£(ƒ^ƒCƒ„‚Ì‰ñ“]‰ñ”)‚ğŒv‘ª‚·‚éŠÖ”
+/// è§’ã¾ã§ã®è·é›¢(ã‚¿ã‚¤ãƒ¤ã®å›è»¢å›æ•°)ã‚’è¨ˆæ¸¬ã™ã‚‹é–¢æ•°
 /// </summary>
-/// <returns>ƒ^ƒCƒ„‚Ì‰ñ“]‚µ‚½‰ñ”</returns>
+/// <returns>ã‚¿ã‚¤ãƒ¤ã®å›è»¢ã—ãŸå›æ•°</returns>
 int WBRCtrl::MeasureDistanceByRoll()
 {
-	SetPwmMove();
-	int spinCount = 0;
-	for (int RspinCount,LspinCount = 0;;)
-	{
-		if (IsCorner())
-		{
-			SetPwmStop();
-			spinCount = RspinCount < LspinCount ? RspinCount : LspinCount;
-			break;
-		}
-		if (digitalRead(PinRRotary_Encoder) == 1)
-		{
-			RspinCount++;
-		}
-		if (digitalRead(PinLRotary_Encoder) == 1)
-		{
-			LspinCount++;
-		}
-	}
-	return spinCount/SPINCOUNT_TARGETVALUE;
+  SetPwmMove();
+  int spinCount = 0;
+  for (int RspinCount, LspinCount = 0;;)
+  {
+    if (IsCorner())
+    {
+      SetPwmStop();
+      spinCount = RspinCount < LspinCount ? RspinCount : LspinCount;
+      break;
+    }
+    if (digitalRead(PinRRotary_Encoder) == 1)
+    {
+      RspinCount++;
+    }
+    if (digitalRead(PinLRotary_Encoder) == 1)
+    {
+      LspinCount++;
+    }
+  }
+  return spinCount / SPINCOUNT_TARGETVALUE;
 
 }
+

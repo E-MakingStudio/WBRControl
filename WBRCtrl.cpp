@@ -298,20 +298,42 @@ void WBRCtrl::BackHome()
 /// </summary>
 /// <param name="RspinCount_TargetCount">右モーターの指定回転数</param>
 /// <param name="LspinCount_TargetCount">左モーターの指定回転数</param>
+/*
+*左右のタイヤについているロータリーエンコーダのパルスを見て、タイヤが指定された回数回転するまで監視する
+ *回転量の制御には「“x分の1”回転」のxを引数に入力してください。ex.半回転→引数は2(=2分の1回転)
+ *センサが羽を通過しているときは出力が0[LOW]、通過していないときは1[HI]が帰ってきます。
+ *車輪のサイズは17/6/16時点では56mm,車体の円の直径は180mmです.
+ */
 void WBRCtrl::StopRollByCount(int RspinCount_TargetCount, int LspinCount_TargetCount)
 {
-  RspinCount_TargetCount, LspinCount_TargetCount *= SPINCOUNT_TARGETVALUE;//一回転あたりのパルス数と回転数をかけて必要なパルス数を算出
+  //一回転に必要なパルス数にタイヤの回転数をかけて、必要なパルス数を用意する
+  //(ここで、呼びされたときに得た引数を用いて必要な回転量分のパルス数を計算)
+  RspinCount_TargetCount, LspinCount_TargetCount /= SPINCOUNT_TARGETVALUE;
+
+// Whileループ内で前回のループのセンサの状態を保存する変数を定義
+  int bf_RRotary_Encoder = 0;
+  int bf_LRotary_Encoder = 0;
 
   for (int RspinCount, LspinCount = 0; RspinCount_TargetCount >= RspinCount && LspinCount_TargetCount >= LspinCount;)//規定のパルス数パルスが発振されるまで繰り返す
   {
-    if (digitalRead(PinRRotary_Encoder) == 1)
+    if (digitalRead(PinRRotary_Encoder) == 0)
     {
-      RspinCount++;
+      if(bf_RRotary_Encoder==1){
+        
+         RspinCount++;
+      }
     }
-    if (digitalRead(PinLRotary_Encoder) == 1)
+    
+    if (digitalRead(PinLRotary_Encoder) == 0)
     {
+      if( bf_LRotary_Encoder==1){
+      
       LspinCount++;
+      }
     }
+  // 今回のセンサの状態を次のループへ持ち越す
+     bf_RRotary_Encoder = digitalRead(PinRRotary_Encoder);
+     bf_LRotary_Encoder = digitalRead(PinLRotary_Encoder);
   }
 }
 

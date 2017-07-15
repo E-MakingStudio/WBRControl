@@ -33,6 +33,7 @@
 #define SPINCOUNT_BODY_LENGTH	  114514			//一本体分移動する為のパルス数
 #define TURNCOUNT_TO_VERTICAL	1919810			//90回転するために必要な回転数
 
+#define DEBUG
 
 #include <arduino.h>
 /**
@@ -40,7 +41,7 @@
 **/
 enum Direction
 {
-	Right = 0, Left = 1
+	Right = 0, Left = 1, Forward = 2, Back = 3,
 };
 /**
 回転の角度の列挙型
@@ -66,8 +67,6 @@ private:
 	int	PinMagnetSensor;
 	int	PinRRotary_Encoder;
 	int	PinLRotary_Encoder;
-	int x_location;
-	int y_location;
 
 public:
 	WBRCtrl
@@ -94,11 +93,11 @@ public:
 	bool CheckBattery(int batteryTartgetValue);
 	void FloorDirectionTurning();
 	void SetPwmTurn(Direction dic);
-	void SetPwmMove();
+	void SetPwmMove(Direction Rdic,Direction Ldic);
 	void SetPwmStop();
-	void Turn(Angle angle,Direction direct);
+	void Turn(Angle angle, Direction direct);
 	void BackHome();
-	void StopRollByCount(int RSpinCount_TargetValue, int LSpinCount_TargetValue);
+	void MoveByCount(float RSpinCount_TargetValue, float LSpinCount_TargetValue);
 	int MeasureDistanceByRoll();
 };
 

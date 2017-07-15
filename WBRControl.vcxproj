@@ -75,14 +75,8 @@
     <ProjectCapability Include="VisualMicro" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="whiteBoardRunbaCustom.ino">
-      <FileType>CppCode</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="WBRCtrl.h" />
     <ClInclude Include="__vm\.WBRControl.vsarduino.h" />
-    <ClInclude Include="__vm\.whiteBoardRunbaCustom.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WBRCtrl.cpp" />

@@ -61,7 +61,7 @@ typedef void *__builtin_va_list;
 
 
 
-#include <arduino.h>
+#include <Arduino.h>
 #include <pins_arduino.h> 
 #undef F
 #define F(string_literal) ((const PROGMEM char *)(string_literal))
@@ -75,6 +75,5 @@ typedef void *__builtin_va_list;
 #define pgm_read_float(address_short) float()
 #define pgm_read_ptr(address_short)   short()
 
-#include "whiteBoardRunbaCustom.ino"
 #endif
 #endif

@@ -59,35 +59,41 @@ void WBRCtrl::PinInitialization()
 /// <returns></returns>
 int WBRCtrl::main()
 {
+	int ConerCount=0;
 	Direction direct = Left;
-
-	if (CheckBattery(START_BATTERY))//起動電圧に達していないことを確認
+  Serial.println("main＿in");
+/*	while (CheckBattery(START_BATTERY))//起動電圧に達していないことを確認
 	{
 		delay(CHARGE_DELAY_TIME);//受電
 	}
-	Serial.println(MeasureDistanceByRoll());
-  delay(100);
-	/*
-	while (CheckBattery(BAD_BATTERY))//起動最低電圧でないかを確認
+	 
+ */
+	while (1)//起動最低電圧でないかを確認
 	{
 		SetPwmMove(Forward, Forward);
 
-		while (IsEdge() == true)
+		if (IsEdge() == true)
 		{
+     
+			TurnDeg180(direct);
+			direct = direct == Right ? Left : Right;//次の角の回転方向を決定する。
+			
 			if (IsCorner() == true)
-			{
-				Turn(deg180, direct);
-
-				direct = direct == Right ? Left : Right;//次の角の回転方向を決定する。
-
-				break;//continueでもいいけど気分で"Break"
-			}
-			FloorDirectionTurning();//モーターのPWMが停止状態で帰ってくるので注意
+			{	
+        
+        ConerCount++;
+				if(ConerCount >= 2){
+				//2はdefainで指定してね		
+        		
+				break;
+				}
+			}			
 		}
-
-		//帰還用の関数を書く必要があります。
-
 	}
+	
+	SetPwmStop();
+  Serial.println("main＿out");
+		//帰還用関数が必要
 
 	/*以下計測とそれに応じた挙動を設定するコード　論理的に破綻したためパージ
 	  //計測開始
@@ -117,6 +123,7 @@ int WBRCtrl::main()
 /// <returns>端かどうか</returns>
 bool WBRCtrl::IsEdge()
 {
+  Serial.println("IsEdge_in");
 	int Edge = false;
 
 	int FRcensor = digitalRead(PinFRSensor);
@@ -127,13 +134,11 @@ bool WBRCtrl::IsEdge()
 
 	if (FRcensor == FLOOR_NOTEXIST || FLcensor == FLOOR_NOTEXIST || FCcensor == FLOOR_NOTEXIST)//どれか一つにセンサーに引っかかったら
 	{
-		if (FRcensor == FLOOR_EXIST || FLcensor == FLOOR_EXIST)
-		{
-			//FloorDirectionTurning();
-			return Edge = true;
-		}
+		FloorDirectionTurning();
+		Serial.println("IsEdge_out,True");
+		return Edge = true;
 	}
-
+  Serial.println("IsEdge_out,False");
 	return Edge;
 
 }
@@ -145,14 +150,17 @@ bool WBRCtrl::IsEdge()
 /// <returns>角であれば[true]でなければ[false]</returns>
 bool WBRCtrl::IsCorner()
 {
+  Serial.println("InCorner_in");
 	int SideRcensor = digitalRead(PinSideRSensor);
 	int SideLcensor = digitalRead(PinSideLSensor);
 
 	if (SideRcensor == FLOOR_EXIST || SideLcensor == FLOOR_EXIST)
 	{
+    Serial.println("InCorner_out,True");
 		return true;
 	}
-
+ 
+  Serial.println("InCorner_out,False");
 	return false;
 }
 
@@ -161,9 +169,9 @@ bool WBRCtrl::IsCorner()
 ///<param name='batteryTartgetValue'>バッテリー電圧値 </param>
 ///<return>バッテリー電圧が所定の値を満たしているかどうか</return>
 ///
-bool WBRCtrl::CheckBattery(int batteryTartgetValue)
+bool WBRCtrl::CheckBattery(double batteryTartgetValue)
 {
-	return analogRead(PinReadBattery) <= batteryTartgetValue ? false : true;
+  return analogRead(PinReadBattery) <= batteryTartgetValue ? false : true;
 }
 /// <summary>
 /// ホワイトボード上下左右の、橋からルンバが飛び出そうとしたときに回転させてもとに戻る関数
@@ -178,15 +186,15 @@ void WBRCtrl::FloorDirectionTurning()
 
 		while (digitalRead(PinFRSensor) != digitalRead(PinFLSensor))
 		{
-			SetPwmTurn(Left);
+			SetPwmTurn(Right);
 		}
 	}
 
-	if (Lcensor == FLOOR_EXIST)
+	else if (Lcensor == FLOOR_EXIST)
 	{
 		while (digitalRead(PinFRSensor) != digitalRead(PinFLSensor))
 		{
-			SetPwmTurn(Right);
+			SetPwmTurn(Left);
 		}
 	}
 
@@ -201,6 +209,7 @@ void WBRCtrl::FloorDirectionTurning()
 */
 void WBRCtrl::SetPwmTurn(Direction dic)
 {
+  Serial.println("SetPwmTurn_in");
 	if (dic == Right)
 	{
 		analogWrite(PinLmotorPWMf, TURN_PWM);
@@ -209,12 +218,15 @@ void WBRCtrl::SetPwmTurn(Direction dic)
 		analogWrite(PinRmotorPWMb, TURN_PWM);
 		return;
 	}
+ else if(dic == Left)
+ {
 	analogWrite(PinLmotorPWMf, 0);
 	analogWrite(PinLmotorPWMb, TURN_PWM);
 	analogWrite(PinRmotorPWMf, TURN_PWM);
 	analogWrite(PinRmotorPWMb, 0);
-
+  Serial.println("SetPwmTurn_out");
 	return;
+ }
 }
 /// <summary>
 /// 
@@ -227,12 +239,8 @@ void WBRCtrl::SetPwmMove(Direction Rdic, Direction Ldic)
 	analogWrite(PinLmotorPWMf, Rdic == Forward ? RIGHT_PWM_SPEED : 0);
 	analogWrite(PinLmotorPWMb, Rdic == Back ? RIGHT_PWM_SPEED : 0);
 
-
-
 	analogWrite(PinRmotorPWMf, Ldic == Forward ? LEFT_PWM_SPEED : 0);
 	analogWrite(PinRmotorPWMb, Ldic == Back ? LEFT_PWM_SPEED : 0);
-
-
 
 	return;
 }
@@ -252,47 +260,34 @@ void WBRCtrl::SetPwmStop()
 	return;
 }
 
-/// <summary>
-/// 回転を行う関数
-/// </summary>
-/// <param name="angle">角度[90deg,180deg]</param>
-/// <param name="direct">方向[Right,Left]</param>
-void WBRCtrl::Turn(Angle angle, Direction direct)
-{
+void WBRCtrl::TurnDeg180(Direction dic){
 
-	if (angle == deg90)
-	{
-		//計算してね❤
-		//MoveByCount();
-	}
+	Serial.println("In Turn180deg.");
 
-	Turn(deg90, direct);
+		// 回転の際にボードのフチに干渉しないように少し後方へ
+	SetPwmMove(Back,Back);
+		
+	MoveByCount(2,2);//計算は後で
 
-	SetPwmMove(Forward, Forward);
-	MoveByCount(1, 1);
+	SetPwmStop();
+	
+		// その場で90度回転
+	SetPwmTurn(dic);
+	MoveByCount(4, 4);
+	
+		//車体分前進
+	SetPwmMove(Forward,Forward);
+		
+	MoveByCount(3, 3);
+
 	SetPwmStop();
 
-	Turn(deg90, direct);
-
-	if (direct == NEXT_TURN_LEFT)
-	{
-		direct = (Direction)NEXT_TURN_RIGHT;
-	}
-
-	if (direct == NEXT_TURN_RIGHT)
-	{
-		direct = (Direction)NEXT_TURN_LEFT;
-	}
-	return;
-
+		// もう一度その場で90度回転
+	SetPwmTurn(dic);
+	MoveByCount(4, 4);
+	Serial.println("Out Turn180deg.");
 }
 
-void WBRCtrl::BackHome()
-{
-	int magnet_sencer = 1;
-
-
-}
 
 /// <summary>
 /// 指定の回転数回転を行わせる関数
@@ -301,7 +296,7 @@ void WBRCtrl::BackHome()
 /// <param name="LspinCount_TargetCount">左モーターの指定回転数</param>
 /*
 *左右のタイヤについているロータリーエンコーダのパルスを見て、タイヤが指定された回数回転するまで監視する
- *回転量の制御には「“x分の1”回転」のxを引数に入力してください。ex.半回転→引数は2(=2分の1回転)
+ *回転量の制御には「x回転」のxを引数に入力してください。
  *センサが羽を通過しているときは出力が0[LOW]、通過していないときは1[HI]が帰ってきます。
  *車輪のサイズは17/6/16時点では56mm,車体の円の直径は180mmです.
  */
@@ -311,24 +306,9 @@ void WBRCtrl::MoveByCount(float RspinCount_TargetCount, float LspinCount_TargetC
 	//(ここで、呼びされたときに得た引数を用いて必要な回転量分のパルス数を計算)
 	RspinCount_TargetCount, LspinCount_TargetCount *= SPINCOUNT_TARGETVALUE;
 
-	// Whileループ内で前回のループのセンサの状態を保存する変数を定義
+	// forループ内で前回のループのセンサの状態を保存する変数を定義
 	int bf_RRotary_Encoder = 0;
 	int bf_LRotary_Encoder = 0;
-
-	if (RspinCount_TargetCount < 0)
-	{
-		if (LspinCount_TargetCount < 0) SetPwmMove(Back, Back);
-		else SetPwmMove(Forward, Back);
-
-	}
-	else
-	{
-		if (LspinCount_TargetCount > 0) SetPwmMove(Forward, Forward);
-		else SetPwmMove(Back, Forward);
-	}
-
-	RspinCount_TargetCount = abs(RspinCount_TargetCount);
-	RspinCount_TargetCount = abs(LspinCount_TargetCount);
 
 	for (int RspinCount, LspinCount = 0; RspinCount_TargetCount >= RspinCount && LspinCount_TargetCount >= LspinCount;)//規定のパルス数パルスが発振されるまで繰り返す
 	{

@@ -12,11 +12,11 @@
 #define CORNER_EXIST		1		// 角あり
 #define CORNER_NOTEXIST		0		// 角なし
 //　FloorDirectionturning
-#define TURN_PWM				145		// モーターの回転数
+#define TURN_PWM				140		// モーターの回転数
 #define FLOOR_DELAY_TIME 		100		// 調整時の待機時間
 //　GoForward
-#define RIGHT_PWM_SPEED		200		// 前進時右モーターの回転数
-#define LEFT_PWM_SPEED		200		// 前進時左モーターの回転数
+#define RIGHT_PWM_SPEED		115		// 前進時右モーターの回転数
+#define LEFT_PWM_SPEED	  140		// 前進時左モーターの回転数
 //　StartBatteryCheck
 #define START_BATTERY			3.5		//十分にバッテリーが充電されているときの電圧
 #define CHARGE_DELAY_TIME		1000		// 充電待機時間\
@@ -28,7 +28,7 @@
 #define MGNET_SERACH_DELAY_TIME		500		// 磁力感知のための待機時間
 //　Rotary_Encoder
 #define ROTARY_ENCODER_SPIN		1		//タイヤの回転数を指定
-#define SPINCOUNT_TARGETVALUE		28		//一回転に必要なパルス数
+#define SPINCOUNT_TARGETVALUE		14		//一回転に必要なパルス数(ロータリーエンコーダの調子が悪いため、実際の4倍の値をいれてます。8/4現在)
 //	
 #define SPINCOUNT_BODY_LENGTH	  114514			//一本体分移動する為のパルス数
 #define TURNCOUNT_TO_VERTICAL	1919810			//90回転するために必要な回転数
@@ -90,12 +90,12 @@ public:
 	void PinInitialization();
 	bool IsEdge();
 	bool IsCorner();
-	bool CheckBattery(int batteryTartgetValue);
+	bool CheckBattery(double batteryTartgetValue);
 	void FloorDirectionTurning();
 	void SetPwmTurn(Direction dic);
 	void SetPwmMove(Direction Rdic,Direction Ldic);
 	void SetPwmStop();
-	void Turn(Angle angle, Direction direct);
+	void TurnDeg180(Direction dic);
 	void BackHome();
 	void MoveByCount(float RSpinCount_TargetValue, float LSpinCount_TargetValue);
 	int MeasureDistanceByRoll();
